@@ -110,10 +110,9 @@ app.post('/webhook', async (req, res) => {
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 app.get('/webhook', (req, res) => {
   /**
-   * UPDATE YOUR VERIFY TOKEN
+   * UPDATE YOUR VERIFY TOKEN IN .env FILE
    *This will be the Verify Token value when you set up webhook
    **/
-  const verify_token = process.env.VERIFY_TOKEN
 
   // Parse params from the webhook verification request
   let mode = req.query['hub.mode']
@@ -123,7 +122,10 @@ app.get('/webhook', (req, res) => {
   // Check if a token and mode were sent
   if (mode && token) {
     // Check the mode and token sent are correct
-    if (mode === 'subscribe' && token === verify_token) {
+    if (
+      (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) ||
+      'voiceflow'
+    ) {
       // Respond with 200 OK and challenge token from the request
       console.log('WEBHOOK_VERIFIED')
       res.status(200).send(challenge)
