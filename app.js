@@ -1,6 +1,6 @@
 'use strict'
 require('dotenv').config()
-const token = process.env.WHATSAPP_BUSINESS_TOKEN
+const token = process.env.WHATSAPP_TOKEN
 
 let api = process.env.VF_PROJECT_API
 let version = process.env.VF_PROJECT_VERSION
@@ -9,20 +9,17 @@ let session = 0
 let noreplyTimeout = null
 let user_id = null
 let user_name = null
-let isRefresh = false
 
 const DMconfig = {
   tts: false,
-  stripSSML: false,
+  stripSSML: true,
 }
 
 const request = require('request'),
   express = require('express'),
   body_parser = require('body-parser'),
   axios = require('axios').default,
-  app = express().use(body_parser.json()),
-  ping = express().use(body_parser.json())
-
+  app = express().use(body_parser.json())
 
 app.listen(process.env.PORT || 3000, () => console.log('webhook is listening'))
 
@@ -324,10 +321,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
   if (isEnding == true) {
     session = null
   }
-  axios({
-    method: 'GET',
-    url: 'https://api-whatsapp.voiceflow.fr:3079/ping',
-  })
 }
 
 async function sendMessage(messages, phone_number_id, from) {
@@ -440,4 +433,3 @@ var rndID = function () {
   var day = weekday[date.getDay()]
   return randomNo + day + timestamp
 }
-
