@@ -1,0 +1,18 @@
+{
+  "name": "example-whatsapp-voiceflow-integration",
+  "version": "1.0.0",
+  "description": "WhatsApp Webhook for Voiceflow DM API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+  },
+  "author": "Voiceflow",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "body-parser": "^1.20.0",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "request": "^2.88.2",
+  }
+}
