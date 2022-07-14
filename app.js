@@ -144,7 +144,9 @@ async function interact(user_id, request, phone_number_id, user_name) {
 
   await axios({
     method: 'PATCH',
-    url: `https://general-runtime.voiceflow.com/state/user/${user_id}/variables`,
+    url: `https://general-runtime.voiceflow.com/state/user/${encodeURI(
+      user_id
+    )}/variables`,
     headers: {
       Authorization: api,
       'Content-Type': 'application/json',
@@ -157,7 +159,9 @@ async function interact(user_id, request, phone_number_id, user_name) {
 
   let response = await axios({
     method: 'POST',
-    url: `https://general-runtime.voiceflow.com/state/user/${user_id}/interact`,
+    url: `https://general-runtime.voiceflow.com/state/user/${encodeURI(
+      user_id
+    )}/interact`,
     headers: {
       Authorization: api,
       'Content-Type': 'application/json',
