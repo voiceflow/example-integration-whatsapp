@@ -241,14 +241,17 @@ async function interact(user_id, request, phone_number_id, user_name) {
         }
         tmpspeech += '\n'
       }
-      if (response.data[i + 1].type != 'choice') {
+      if (
+        response.data[i + 1]?.type &&
+        response.data[i + 1]?.type == 'choice'
+      ) {
         messages.push({
-          type: 'text',
+          type: 'body',
           value: tmpspeech,
         })
       } else {
         messages.push({
-          type: 'body',
+          type: 'text',
           value: tmpspeech,
         })
       }
@@ -259,14 +262,17 @@ async function interact(user_id, request, phone_number_id, user_name) {
           value: response.data[i].payload.src,
         })
       } else {
-        if (response.data[i + 1].type != 'choice') {
+        if (
+          response.data[i + 1]?.type &&
+          response.data[i + 1]?.type == 'choice'
+        ) {
           messages.push({
-            type: 'text',
+            type: 'body',
             value: response.data[i].payload.message,
           })
         } else {
           messages.push({
-            type: 'body',
+            type: 'text',
             value: response.data[i].payload.message,
           })
         }
