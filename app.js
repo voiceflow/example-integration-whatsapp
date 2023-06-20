@@ -1,22 +1,28 @@
 'use strict'
 require('dotenv').config()
-const token = process.env.WHATSAPP_TOKEN
+const WHATSAPP_VERSION = process.env.WHATSAPP_VERSION || 'v17.0'
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
 
-let api = process.env.VF_PROJECT_API
-let version = process.env.VF_PROJECT_VERSION
-
+const VF_API_KEY = process.env.VF_API_KEY
+const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
+const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
 let session = 0
 let noreplyTimeout = null
 let user_id = null
 let user_name = null
+const VF_TRANSCRIPT_ICON =
+  'https://s3.amazonaws.com/com.voiceflow.studio/share/200x200/200x200.png'
+
+const VF_DM_URL =
+  process.env.VF_DM_URL || 'https://general-runtime.voiceflow.com'
 
 const DMconfig = {
   tts: false,
   stripSSML: true,
 }
 
-const request = require('request'),
-  express = require('express'),
+//const request = require('request'),
+const express = require('express'),
   body_parser = require('body-parser'),
   axios = require('axios').default,
   app = express().use(body_parser.json())
@@ -26,7 +32,7 @@ app.listen(process.env.PORT || 3000, () => console.log('webhook is listening'))
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    info: 'WhatsApp API v1.0.2 | V⦿iceflow | 2022',
+    info: 'WhatsApp API v1.1.2 | V⦿iceflow | 2022',
     status: 'healthy',
     error: null,
   })
@@ -139,16 +145,14 @@ app.get('/webhook', (req, res) => {
 async function interact(user_id, request, phone_number_id, user_name) {
   clearTimeout(noreplyTimeout)
   if (!session) {
-    session = `${version}.${rndID()}`
+    session = `${VF_VERSION_ID}.${rndID()}`
   }
 
   await axios({
     method: 'PATCH',
-    url: `https://general-runtime.voiceflow.com/state/user/${encodeURI(
-      user_id
-    )}/variables`,
+    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/variables`,
     headers: {
-      Authorization: api,
+      Authorization: VF_API_KEY,
       'Content-Type': 'application/json',
     },
     data: {
@@ -159,13 +163,11 @@ async function interact(user_id, request, phone_number_id, user_name) {
 
   let response = await axios({
     method: 'POST',
-    url: `https://general-runtime.voiceflow.com/state/user/${encodeURI(
-      user_id
-    )}/interact`,
+    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/interact`,
     headers: {
-      Authorization: api,
+      Authorization: VF_API_KEY,
       'Content-Type': 'application/json',
-      versionID: version,
+      versionID: VF_VERSION_ID,
       sessionID: session,
     },
     data: {
@@ -178,6 +180,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
   if (isEnding.length > 0) {
     console.log('isEnding')
     isEnding = true
+    saveTranscript(user_name)
   } else {
     isEnding = false
   }
@@ -187,6 +190,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
   for (let i = 0; i < response.data.length; i++) {
     if (response.data[i].type == 'text') {
       let tmpspeech = ''
+
       for (let j = 0; j < response.data[i].payload.slate.content.length; j++) {
         for (
           let k = 0;
@@ -305,7 +309,9 @@ async function interact(user_id, request, phone_number_id, user_name) {
             type: 'reply',
             reply: {
               id: response.data[i].payload.buttons[b].request.type,
-              title: response.data[i].payload.buttons[b].request.payload.label,
+              title: truncateString(
+                response.data[i].payload.buttons[b].request.payload.label
+              ),
             },
           })
         } else {
@@ -314,7 +320,9 @@ async function interact(user_id, request, phone_number_id, user_name) {
             reply: {
               id: response.data[i].payload.buttons[b].request.payload.intent
                 .name,
-              title: response.data[i].payload.buttons[b].request.payload.label,
+              title: truncateString(
+                response.data[i].payload.buttons[b].request.payload.label
+              ),
             },
           })
         }
@@ -396,12 +404,11 @@ async function sendMessage(messages, phone_number_id, from) {
     if (!ignore) {
       await axios({
         method: 'POST',
-        url:
-          'https://graph.facebook.com/v14.0/' + phone_number_id + '/messages',
+        url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
         data: data,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
+          Authorization: 'Bearer ' + WHATSAPP_TOKEN,
         },
       })
         .then(function (response) {
@@ -444,4 +451,44 @@ var rndID = function () {
   weekday[6] = 'Saturday'
   var day = weekday[date.getDay()]
   return randomNo + day + timestamp
+}
+
+function truncateString(str, maxLength = 20) {
+  if (str.length > maxLength) {
+    return str.substring(0, maxLength - 1) + '…'
+  }
+  return str
+}
+
+async function saveTranscript(username) {
+  if (VF_PROJECT_ID) {
+    if (!username || username == '' || username == undefined) {
+      username = 'Anonymous'
+    }
+    axios({
+      method: 'put',
+      url: 'https://api.voiceflow.com/v2/transcripts',
+      data: {
+        browser: 'WhatsApp',
+        device: 'desktop',
+        os: 'server',
+        sessionID: session,
+        unread: true,
+        versionID: VF_VERSION_ID,
+        projectID: VF_PROJECT_ID,
+        user: {
+          name: username,
+          image: VF_TRANSCRIPT_ICON,
+        },
+      },
+      headers: {
+        Authorization: process.env.VF_API_KEY,
+      },
+    })
+      .then(function (response) {
+        console.log('Transcript Saved!')
+      })
+      .catch((err) => console.log(err))
+  }
+  session = `${VF_VERSION_ID}.${rndID()}`
 }

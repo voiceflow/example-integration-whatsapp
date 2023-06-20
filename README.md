@@ -32,6 +32,10 @@ Once registered as a dev, go to https://developers.facebook.com/apps/
 Create a new app by clicking on ![create a new app](/doc/new-app.png)
 <br><br>
 
+Select "**Other**" for the use case ![business app](/doc/wa_create_app.png) and click **Next**
+<br><br>
+
+
 Select "**Business**" for app type ![business app](/doc/business-app.png) and click **Next**
 <br><br>
 
@@ -47,7 +51,45 @@ Create a Business account (or select an existing one)<br><br>
 ![business account](/doc/business-account.png)<br>
 <br><br>
 
-Link an existing number or create a new one<br><br>
+Go to https://business.facebook.com/home/accounts to add a system user.
+
+Select your Business account and click on the gear (Settings)<br><br>
+![business account](/doc/wa_b_settings.png)<br>
+<br><br>
+
+
+In Users section, select System users and then click on **Add**<br><br>
+![business account](/doc/wa_b_add.png)<br>
+<br><br>
+
+
+Create a new system user with the **Admin** role<br><br>
+![business account](/doc/wa_user_create.png)<br>
+<br><br>
+
+Once created, click on the **Generate new token** button.<br><br>
+![business account](/doc/wa_user_token.png)<br>
+<br><br>
+
+Select **your app**, set the token expiration to **Never**, select the **permissions** as bellow and click on the **Generate token** button.<br><br>
+![business account](/doc/wa_sys_permissions.jpg)<br>
+<br><br>
+
+Save your **token** for later and click **OK** when it's done.<br><br>
+![business account](/doc/wa_generate_token.png)<br>
+<br><br>
+
+Now go to the **Accounts** section > **WhatsApp Accounts** and click on **Add people**<br><br>
+![business account](/doc/wa_add_account.png)<br>
+<br><br>
+
+Select the newly created system account, toggle **Full control** and click on **Assign**<br><br>
+![business account](/doc/wa_select_system.png)<br>
+<br><br>
+
+
+
+Go back to your **Dashboard** (https://developers.facebook.com/apps/) and link an existing number or create a new one<br><br>
 ![add number](/doc/add-number.png)
 
 You can add your phone number by clicking on Manage phone number list
@@ -59,22 +101,24 @@ Now that you are ready to do a test, simply click on the **Send message** button
 You should get something like this in your **WhatsApp** app<br>
 ![test message](/doc/test-message.png)<br><br>
 
-Last step here, you want to go to the top of the page and click on **Refresh** then **Copy** to copy your token.<br>
-![get token](/doc/get-token.png)<br>
-Save it as we will need it in the new step
-<br><br>
-
 # Webhook
+## Using Replit
 
+
+## Using ngrok (local)
 Before going further, let's start populating our .env file with our token.
-In the root of the app directory, create the **.env** file.
+In the root of the app directory, rename the **.env.example** file to **.env**<br>
 We are going to populate this file with the needed info for the WhatsApp webhook as well as the Voiceflow project.
 
 ```
-WHATSAPP_TOKEN = 'EAAQlqaPy54MBAGqxxxxxxxx'
+WHATSAPP_VERSION = 'v17.0'
+WHATSAPP_TOKEN = 'YOUR_WHATSAPP_SYSTEM_USER_TOKEN'
 VERIFY_TOKEN = 'voiceflow'
-VF_PROJECT_API = ''
-VF_PROJECT_VERSION = 'production'
+VF_API_KEY = 'YOUR_VOICEFLOW_API_KEY'
+VF_PROJECT_ID = 'YOUR_VOICEFLOW_PROJECT_ID'
+VF_VERSION_ID = 'development' # or 'production'
+VF_DM_URL = 'https://general-runtime.voiceflow.com'
+VF_TRANSCRIPT_ICON = 'https://s3.amazonaws.com/com.voiceflow.studio/share/200x200/200x200.png'
 PORT = '3000'
 ```
 
@@ -111,7 +155,7 @@ In a new terminal, type
 
 ```ngrok http 3000```
 
-Replace **3000** with the **PORT** number you want to use.
+Replace **3000** with the **PORT** number you choose to use.
 <br><br>
 ![ngrok console](/doc/ngrok-console.png)<br><br>
 Here, the URL you want to copy is the secure one (starting with https)
@@ -122,7 +166,7 @@ Almost there, go back to your **Config page**, paste this URL and add the **/web
 
 And click on **Verify and save**
 <br><br>
-If everything is fine, the previous window should close and your webhook set up.
+If everything is fine, the previous window should close and your webhook ready.
 <br><br>
 ![webhook setup](/doc/webhook-setup.png)<br><br>
 
@@ -136,7 +180,7 @@ Click on **Manage** and, on the new window, **subscribe** to **messages**
 
 You should have a config similar to this one
 
-![sub-messages](/doc/sub-messages.png)<br><br>
+![sub-messages](/doc/wa_messages.png)<br><br>
 
 
 # Voiceflow Project
@@ -151,8 +195,7 @@ In Voiceflow Creator, open a Chat project and go to the Integrations<br><br>
 On the Integrations page, you want to copy the API key<br><br>
 ![api-key](/doc/api-key.png)<br><br>
 
-Now, paste it in your .env file for the **VF_PROJECT_API** variable<br>
-```VF_PROJECT_API='VF.DM.62xxxxxxxxxxxxxxxxxxxxxxx'```
+Now, paste it in your .env file for the **VF_API_KEY** variable<br>
 
 Back on Voiceflow Creator, go to the **Designer** view and click on the **Publish** button<br><br>
 ![publish-button](/doc/publish-button.png)<br><br>
