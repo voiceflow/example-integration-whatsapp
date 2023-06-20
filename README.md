@@ -85,7 +85,7 @@ You should get something like this in your **WhatsApp** app
 # Webhook
 ## Using Replit
 
-Fork the following Replit project: https://replit.com/@voiceflow/example-integration-whatsapp
+Fork the following Replit project: https://replit.com/@niko-voiceflow/example-integration-whatsapp?v=1
 
 Open the Secret tool, click on Edit as JSON and copy/paste the following JSON code<br>
 ![test message](/doc/replit_secret.png)<br><br>
