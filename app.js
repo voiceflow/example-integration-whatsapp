@@ -32,7 +32,7 @@ app.listen(process.env.PORT || 3000, () => console.log('webhook is listening'))
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    info: 'WhatsApp API v1.1.2 | V⦿iceflow | 2022',
+    info: 'WhatsApp API v1.1.2 | V⦿iceflow | 2023',
     status: 'healthy',
     error: null,
   })
@@ -344,6 +344,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
 }
 
 async function sendMessage(messages, phone_number_id, from) {
+  const timeoutPerKB = 10 // Adjust as needed, 10 milliseconds per kilobyte
   for (let j = 0; j < messages.length; j++) {
     let data
     let ignore = null
@@ -402,21 +403,35 @@ async function sendMessage(messages, phone_number_id, from) {
       ignore = true
     }
     if (!ignore) {
-      await axios({
-        method: 'POST',
-        url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-        data: data,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + WHATSAPP_TOKEN,
-        },
-      })
-        .then(function (response) {
-          // console.log('Message sent:', messages[j])
+      try {
+        await axios({
+          method: 'POST',
+          url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+          data: data,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+          },
         })
-        .catch(function (err) {
-          console.log(err)
-        })
+
+        if (messages[j].type === 'image') {
+          try {
+            const response = await axios.head(messages[j].value)
+
+            if (response.headers['content-length']) {
+              const imageSizeKB =
+                parseInt(response.headers['content-length']) / 1024
+              const timeout = imageSizeKB * timeoutPerKB
+              await new Promise((resolve) => setTimeout(resolve, timeout))
+            }
+          } catch (error) {
+            console.error('Failed to fetch image size:', error)
+            await new Promise((resolve) => setTimeout(resolve, 5000))
+          }
+        }
+      } catch (err) {
+        console.log(err)
+      }
     }
   }
 }
