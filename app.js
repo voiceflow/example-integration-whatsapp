@@ -6,6 +6,16 @@ const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
 const VF_API_KEY = process.env.VF_API_KEY
 const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
 const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
+
+const fs = require('fs')
+
+const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
+
+const {
+  Leopard,
+  LeopardActivationLimitReached,
+} = require('@picovoice/leopard-node')
+
 let session = 0
 let noreplyTimeout = null
 let user_id = null
@@ -21,7 +31,6 @@ const DMconfig = {
   stripSSML: true,
 }
 
-//const request = require('request'),
 const express = require('express'),
   body_parser = require('body-parser'),
   axios = require('axios').default,
@@ -63,6 +72,56 @@ app.post('/webhook', async (req, res) => {
           phone_number_id,
           user_name
         )
+      } else if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.audio) {
+        if (
+          req.body?.entry[0]?.changes[0]?.value?.messages[0]?.audio?.voice ==
+            true &&
+          PICOVOICE_API_KEY
+        ) {
+          let mediaURL = await axios({
+            method: 'GET',
+            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${req.body.entry[0].changes[0].value.messages[0].audio.id}`,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+            },
+          })
+
+          const rndFileName =
+            'audio_' + Math.random().toString(36).substring(7) + '.ogg'
+
+          axios({
+            method: 'get',
+            url: mediaURL.data.url,
+            headers: {
+              Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+            },
+            responseType: 'stream',
+          }).then(function (response) {
+            let engineInstance = new Leopard(PICOVOICE_API_KEY)
+            const wstream = fs.createWriteStream(rndFileName)
+            response.data.pipe(wstream)
+            wstream.on('finish', async () => {
+              console.log('Analysing Audio file')
+              const { transcript, words } =
+                engineInstance.processFile(rndFileName)
+              engineInstance.release()
+              fs.unlinkSync(rndFileName)
+              if (transcript && transcript != '') {
+                console.log('User audio:', transcript)
+                await interact(
+                  user_id,
+                  {
+                    type: 'text',
+                    payload: transcript,
+                  },
+                  phone_number_id,
+                  user_name
+                )
+              }
+            })
+          })
+        }
       } else {
         if (
           req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(

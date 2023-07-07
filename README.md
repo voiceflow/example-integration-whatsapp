@@ -90,9 +90,13 @@ Fork the following Replit project: https://replit.com/@niko-voiceflow/example-in
 Open the Secret tool, click on Edit as JSON and copy/paste the following JSON code<br>
 ![test message](/doc/replit_secret.png)<br><br>
 
+Optional: To support audio messages you will need to use an API key available on PicoVoice Dev console
+https://console.picovoice.ai/
+
 
 ```
 {
+  "PICOVOICE_API_KEY" = "",
   "WHATSAPP_VERSION": "v17.0",
   "WHATSAPP_TOKEN": "",
   "VERIFY_TOKEN": "voiceflow",
@@ -160,7 +164,12 @@ Before going further, let's start populating our .env file with our token.
 In the root of the app directory, rename the **.env.example** file to **.env**<br>
 We are going to populate this file with the needed info for the WhatsApp webhook as well as the Voiceflow project.
 
+Optional: To support audio messages you will need to use an API key available on PicoVoice Dev console
+https://console.picovoice.ai/
+
+
 ```
+"PICOVOICE_API_KEY" = "",
 WHATSAPP_VERSION = 'v17.0'
 WHATSAPP_TOKEN = 'YOUR_WHATSAPP_SYSTEM_USER_TOKEN'
 VERIFY_TOKEN = 'voiceflow'
