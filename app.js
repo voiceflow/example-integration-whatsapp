@@ -370,7 +370,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
               id: response.data[i].payload.buttons[b].request.type,
               title: truncateString(
                 response.data[i].payload.buttons[b].request.payload.label
-              ),
+              ) ?? "",
             },
           })
         } else {
@@ -381,10 +381,13 @@ async function interact(user_id, request, phone_number_id, user_name) {
                 .name,
               title: truncateString(
                 response.data[i].payload.buttons[b].request.payload.label
-              ),
+              ) ?? "",
             },
           })
         }
+      }
+      if (buttons.length > 3) {
+        buttons = buttons.slice(0, 3);
       }
       messages.push({
         type: 'buttons',
@@ -528,10 +531,13 @@ var rndID = function () {
 }
 
 function truncateString(str, maxLength = 20) {
-  if (str.length > maxLength) {
-    return str.substring(0, maxLength - 1) + '…'
+  if(str) {
+    if (str.length > maxLength) {
+      return str.substring(0, maxLength - 1) + '…'
+    }
+    return str
   }
-  return str
+  return ""
 }
 
 async function saveTranscript(username) {
