@@ -60,9 +60,15 @@ app.post('/webhook', async (req, res) => {
       let phone_number_id =
         req.body.entry[0].changes[0].value.metadata.phone_number_id
       user_id = req.body.entry[0].changes[0].value.messages[0].from // extract the phone number from the webhook payload
+      user_id = encrypt(user_id);
       let user_name =
         req.body.entry[0].changes[0].value.contacts[0].profile.name
+      user_name = encrypt(user_name);
       if (req.body.entry[0].changes[0].value.messages[0].text) {
+        if(req.body.entry[0].changes[0].value.messages[0].text.body.startsWith("/restart")){
+          deleteUserState(user_id);
+          return res.status(200).json({ message: 'ok, we start again' });
+        }
         await interact(
           user_id,
           {
@@ -406,6 +412,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
 }
 
 async function sendMessage(messages, phone_number_id, from) {
+  from = decrypt(from);
   const timeoutPerKB = 10 // Adjust as needed, 10 milliseconds per kilobyte
   for (let j = 0; j < messages.length; j++) {
     let data
@@ -572,3 +579,41 @@ async function saveTranscript(username) {
   }
   session = `${VF_VERSION_ID}.${rndID()}`
 }
+
+const { createCipheriv, createDecipheriv, scryptSync } = require('crypto');
+
+const key = scryptSync(process.env.KEY, "salt", 32);
+const iv = scryptSync(process.env.KEY, "salt", 16);
+
+function encrypt(data) {
+  const cipher = createCipheriv('AES-256-CBC', key, iv);
+  return cipher.update(data, 'utf8', 'hex') + cipher.final('hex');
+}
+
+function decrypt(data) {
+  const decipher = createDecipheriv('AES-256-CBC', key, iv);
+  return decipher.update(data, 'hex', 'utf8') + decipher.final('utf8');
+}
+
+function deleteUserState(userID) {
+  axios({
+    method: 'DELETE',
+    url: `${VF_DM_URL}/state/user/${encodeURI(
+      userID
+    )}`,
+    headers: {
+      Authorization: api,
+      'Content-Type': 'application/json',
+      versionID: version
+    }
+  })
+    .catch(function (err) {
+      console.log(err)
+      return "not deleted";
+    })
+  return "deleted";
+}
+
+app.delete('/state/user/:userID', function (req, res) {
+  res = deleteUserState(encrypt(req.params.userID));
+});
