@@ -602,9 +602,9 @@ function deleteUserState(userID) {
       userID
     )}`,
     headers: {
-      Authorization: api,
+      Authorization: VF_API_KEY,
       'Content-Type': 'application/json',
-      versionID: version
+      versionID: VF_VERSION_ID
     }
   })
     .catch(function (err) {
