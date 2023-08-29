@@ -629,18 +629,18 @@ app.post('/intent', async (req, res) => {
         payload: {
           query: query_value,
           intent: {
-            name: intent_name,
+            name: intent_name
           },
-          entities: [],
-        },
+          entities: []
+        }
       },
       phone_number_id,
       user_name
     );
 
-    res.json({ message: 'Interaction completed' });
+    res.status(200).end();
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).send('Internal Server Error');
   }
 });
