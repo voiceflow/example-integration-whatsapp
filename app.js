@@ -617,3 +617,30 @@ function deleteUserState(userID) {
 app.delete('/state/user/:userID', function (req, res) {
   res = deleteUserState(encrypt(req.params.userID));
 });
+
+app.post('/intent', async (req, res) => {
+  try {
+    const { user_id, query_value, intent_name, phone_number_id, user_name } = req.body;
+
+    await interact(
+      user_id,
+      {
+        type: 'intent',
+        payload: {
+          query: query_value,
+          intent: {
+            name: intent_name,
+          },
+          entities: [],
+        },
+      },
+      phone_number_id,
+      user_name
+    );
+
+    res.json({ message: 'Interaction completed' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
