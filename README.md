@@ -96,7 +96,7 @@ https://console.picovoice.ai/
 
 ```
 {
-  "PICOVOICE_API_KEY" = "",
+  "PICOVOICE_API_KEY": "",
   "WHATSAPP_VERSION": "v17.0",
   "WHATSAPP_TOKEN": "",
   "VERIFY_TOKEN": "voiceflow",
@@ -169,16 +169,18 @@ https://console.picovoice.ai/
 
 
 ```
-"PICOVOICE_API_KEY" = "",
-WHATSAPP_VERSION = 'v17.0'
-WHATSAPP_TOKEN = 'YOUR_WHATSAPP_SYSTEM_USER_TOKEN'
-VERIFY_TOKEN = 'voiceflow'
-VF_API_KEY = 'YOUR_VOICEFLOW_API_KEY'
-VF_PROJECT_ID = 'YOUR_VOICEFLOW_PROJECT_ID'
-VF_VERSION_ID = 'development' # or 'production' or specific ID
-VF_DM_URL = 'https://general-runtime.voiceflow.com'
-VF_TRANSCRIPT_ICON = 'https://s3.amazonaws.com/com.voiceflow.studio/share/200x200/200x200.png'
-PORT = 3000
+{
+  "PICOVOICE_API_KEY": "",
+  "WHATSAPP_VERSION": "v17.0",
+  "WHATSAPP_TOKEN": "",
+  "VERIFY_TOKEN": "voiceflow",
+  "VF_API_KEY": "",
+  "VF_PROJECT_ID": "",
+  "VF_VERSION_ID": "development",
+  "VF_DM_URL": "https://general-runtime.voiceflow.com",
+  "VF_TRANSCRIPT_ICON": "https://s3.amazonaws.com/com.voiceflow.studio/share/200x200/200x200.png",
+  "PORT": 3000
+}
 ```
 
 For now, you can paste the token for the **WHATSAPP_TOKEN** variable,
