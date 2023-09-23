@@ -53,6 +53,7 @@ app.post('/webhook', async (req, res) => {
   let body = req.body
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
+
   if (req.body.object) {
     const isNotInteractive =
       req.body?.entry[0]?.changes[0]?.value?.messages?.length || null
@@ -368,9 +369,10 @@ async function interact(user_id, request, phone_number_id, user_name) {
             type: 'reply',
             reply: {
               id: response.data[i].payload.buttons[b].request.type,
-              title: truncateString(
-                response.data[i].payload.buttons[b].request.payload.label
-              ) ?? "",
+              title:
+                truncateString(
+                  response.data[i].payload.buttons[b].request.payload.label
+                ) ?? '',
             },
           })
         } else {
@@ -379,15 +381,16 @@ async function interact(user_id, request, phone_number_id, user_name) {
             reply: {
               id: response.data[i].payload.buttons[b].request.payload.intent
                 .name,
-              title: truncateString(
-                response.data[i].payload.buttons[b].request.payload.label
-              ) ?? "",
+              title:
+                truncateString(
+                  response.data[i].payload.buttons[b].request.payload.label
+                ) ?? '',
             },
           })
         }
       }
       if (buttons.length > 3) {
-        buttons = buttons.slice(0, 3);
+        buttons = buttons.slice(0, 3)
       }
       messages.push({
         type: 'buttons',
@@ -442,7 +445,7 @@ async function sendMessage(messages, phone_number_id, from) {
         interactive: {
           type: 'button',
           body: {
-            text: messages[j - 1].value || 'Make your choice',
+            text: messages[j - 1]?.value || 'Make your choice',
           },
           action: {
             buttons: messages[j].buttons,
@@ -531,13 +534,13 @@ var rndID = function () {
 }
 
 function truncateString(str, maxLength = 20) {
-  if(str) {
+  if (str) {
     if (str.length > maxLength) {
       return str.substring(0, maxLength - 1) + '…'
     }
     return str
   }
-  return ""
+  return ''
 }
 
 async function saveTranscript(username) {
