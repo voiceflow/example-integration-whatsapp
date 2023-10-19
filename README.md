@@ -68,7 +68,7 @@ Now go to the **Accounts** section > **WhatsApp Accounts** and click on **Add pe
 
 Select the newly created system account, toggle **Full control** and click on **Assign**
 ![business account](/doc/wa_select_system.png)<br>
-
+![business account valid](/doc/wa_business_valid.png)<br>
 
 Go back to your **Dashboard** (https://developers.facebook.com/apps/) and link an existing number or create a new one
 ![add number](/doc/add-number.png)
