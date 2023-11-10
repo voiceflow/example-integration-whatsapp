@@ -2,6 +2,9 @@
 How to use WhatsApp Cloud API with Voiceflow Dialog Manager API
 * * *
 
+## Before you begin
+This guide is intended for people building an integration for their own organizations. If you are building an integration that will be used by another business, see Meta's [Get Started for Solution Partners doc](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started-for-solution-partners) or their [Get Started for Tech Providers doc](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started-for-tech-providers).
+
 
 # Create an app on Facebook Developers portal
 
