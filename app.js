@@ -245,6 +245,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
   let isEnding = response.data.filter(({ type }) => type === 'end')
   if (isEnding.length > 0) {
     console.log('isEnding')
+    console.log("user_id: " + user_id)
     isEnding = true
     saveTranscript(user_name)
   } else {
@@ -511,6 +512,7 @@ async function sendMessage(messages, phone_number_id, from) {
 async function sendNoReply(user_id, request, phone_number_id, user_name) {
   clearTimeout(noreplyTimeout)
   console.log('No reply')
+  console.log("user_id: " + user_id)
   await interact(
     user_id,
     {
