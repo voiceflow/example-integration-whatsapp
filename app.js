@@ -649,3 +649,38 @@ app.post('/intent', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+// new code from sandro
+app.post('/template/scheduler', async (req, res) => {
+  try {
+    let data = JSON.stringify({
+    "messaging_product": "whatsapp",
+    "recipient_type": "individual",
+    "to": user_id,
+    "type": "template",
+    "template": {
+        "name": "show_reminder",
+        "language": {
+        "code": "en"
+        }
+    }
+    });
+
+    let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${req.body.entry[0].changes[0].value.messages[0].audio.id}/messages`,
+    headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+    },
+    data : data
+    };
+
+    );
+
+    res.status(200).end();
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
