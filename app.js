@@ -649,3 +649,53 @@ app.post('/intent', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+// code from sandro
+app.post('/template/scheduler', async (req, res) => {
+  try {
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id,
+      "type": "template",
+      "template": {
+        "name": "show_reminder",
+        "language": {
+          "code": "en"
+        }
+      }
+    });
+
+    // Logging the request data
+    console.log('Sending WhatsApp message with data:', data);
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+      },
+      data: data
+    };
+
+    // Logging the Axios configuration
+    console.log('Axios config:', config);
+
+    const response = await axios(config);
+
+    // Logging the response from the WhatsApp API
+    console.log('WhatsApp API response:', response.data);
+
+    res.status(200).end();
+  } catch (error) {
+    // Detailed error logging
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      // Log more detailed API response error
+      console.error('API response error:', error.response.data);
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
