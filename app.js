@@ -653,6 +653,7 @@ app.post('/intent', async (req, res) => {
 // code from sandro
 app.post('/template/scheduler', async (req, res) => {
   try {
+    const { user_id, phone_number_id } = req.body;
     let data = JSON.stringify({
       "messaging_product": "whatsapp",
       "recipient_type": "individual",
@@ -682,7 +683,7 @@ app.post('/template/scheduler', async (req, res) => {
 
     // Logging the Axios configuration
     console.log('Axios config:', config);
-
+   
     const response = await axios(config);
 
     // Logging the response from the WhatsApp API
