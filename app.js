@@ -672,7 +672,7 @@ app.post('/template/scheduler', async (req, res) => {
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
-      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/115791554469980/messages`,
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
