@@ -654,10 +654,11 @@ app.post('/intent', async (req, res) => {
 app.post('/template/scheduler', async (req, res) => {
   try {
     const { user_id, phone_number_id } = req.body;
+    user_id_plain = decrypt(user_id)
     let data = JSON.stringify({
       "messaging_product": "whatsapp",
       "recipient_type": "individual",
-      "to": user_id,
+      "to": user_id_plain,
       "type": "template",
       "template": {
         "name": "show_reminder",
