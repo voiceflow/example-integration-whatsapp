@@ -701,3 +701,69 @@ app.post('/template/scheduler', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+// code from sandro 2 (appointment reminder)
+app.post('/template/scheduler', async (req, res) => {
+  try {
+    const { user_id, query_value, phone_number_id, time_point, appointment_title } = req.body;
+    let user_id_plain = decrypt(user_id);
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id_plain,
+      "type": "template",
+      "template": {
+        "name": query_value,
+        "language": {
+          "code": "en"
+        },
+        "components":
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "date_time",
+                "date_time": time_point
+              },
+              {
+                "type": "text",
+                "text": appointment_title
+              }
+            ]
+          }
+      }
+    });
+
+    // Logging the request data
+    console.log('Sending WhatsApp message with data:', data);
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+      },
+      data: data
+    };
+
+    // Logging the Axios configuration
+    console.log('Axios config:', config);
+   
+    const response = await axios(config);
+
+    // Logging the response from the WhatsApp API
+    console.log('WhatsApp API response:', response.data);
+
+    res.status(200).end();
+  } catch (error) {
+    // Detailed error logging
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      // Log more detailed API response error
+      console.error('API response error:', error.response.data);
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
