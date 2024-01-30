@@ -657,6 +657,7 @@ app.post('/template/scheduler', async (req, res) => {
   try {
     const { user_id, query_value, phone_number_id, time_point, appointment_title, template_name } = req.body;
     let user_id_plain = decrypt(user_id);
+    let data; // declare data variable outside if statement
     if (query_value === "a") {
       let data = JSON.stringify({
         "messaging_product": "whatsapp",
