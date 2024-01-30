@@ -716,7 +716,7 @@ app.post('/template/appointscheduler', async (req, res) => {
         "language": {
           "code": "en"
         },
-        "components":
+        "components": [
           {
             "type": "body",
             "parameters": [
@@ -730,6 +730,7 @@ app.post('/template/appointscheduler', async (req, res) => {
               }
             ]
           }
+        ]
       }
     });
   
