@@ -704,7 +704,7 @@ app.post('/template/scheduler', async (req, res) => {
 
 app.post('/template/appointscheduler', async (req, res) => {
   try {
-    const { user_id, phone_number_id, time_point, appointment_title } = req.body;
+    const { user_id, phone_number_id, appointment_title, time_point } = req.body;
     let user_id_plain = decrypt(user_id);
     let data = JSON.stringify({
       "messaging_product": "whatsapp",
@@ -722,12 +722,105 @@ app.post('/template/appointscheduler', async (req, res) => {
             "parameters": [
               {
                 "type": "text",
-                "text": time_point
+                "text": appointment_title
               },
               {
                 "type": "text",
-                "text": appointment_title
+                "text": time_point
               }
+            ]
+          }
+        ]
+      }
+    });
+  
+    // Logging the request data
+    console.log('Sending WhatsApp message with data:', data);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+      },
+      data: data
+    };
+    // Logging the Axios configuration
+    console.log('Axios config:', config);
+   
+    const response = await axios(config);
+    // Logging the response from the WhatsApp API
+    console.log('WhatsApp API response:', response.data);
+    res.status(200).end();
+  } catch (error) {
+    // Detailed error logging
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      // Log more detailed API response error
+      console.error('API response error:', error.response.data);
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// code from sandro (module push)
+
+app.post('/template/module', async (req, res) => {
+  try {
+    const { user_id, phone_number_id, module_title } = req.body;
+    let user_id_plain = decrypt(user_id);
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id_plain,
+      "type": "template",
+      "template": {
+        "name": "module_push",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": module_title
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 0,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "Yes-Button-Payload"
+                }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 1,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "No, remind me in 2 days-Button-Payload"
+                }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 2,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "I am not interested-Button-Payload"
+                }
             ]
           }
         ]
