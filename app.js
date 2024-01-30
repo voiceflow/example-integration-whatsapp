@@ -721,8 +721,8 @@ app.post('/template/appointscheduler', async (req, res) => {
             "type": "body",
             "parameters": [
               {
-                "type": "date_time",
-                "date_time": time_point
+                "type": "text",
+                "text": time_point
               },
               {
                 "type": "text",
