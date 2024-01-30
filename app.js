@@ -657,48 +657,33 @@ app.post('/template/scheduler', async (req, res) => {
   try {
     const { user_id, query_value, phone_number_id, time_point, appointment_title, template_name } = req.body;
     let user_id_plain = decrypt(user_id);
-    let data; // declare data variable outside if statement
-    if (query_value === "a") {
-      let data = JSON.stringify({
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": user_id_plain,
-        "type": "template",
-        "template": {
-          "name": template_name,
-          "language": {
-            "code": "en"
-          },
-          "components":
-            {
-              "type": "body",
-              "parameters": [
-                {
-                  "type": "date_time",
-                  "date_time": time_point
-                },
-                {
-                  "type": "text",
-                  "text": appointment_title
-                }
-              ]
-            }
-        }
-      });
-    } else if (query_value === "m") {
-      let data = JSON.stringify({
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": user_id_plain,
-        "type": "template",
-        "template": {
-          "name": template_name,
-          "language": {
-            "code": "en"
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id_plain,
+      "type": "template",
+      "template": {
+        "name": template_name,
+        "language": {
+          "code": "en"
+        },
+        "components":
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "date_time",
+                "date_time": time_point
+              },
+              {
+                "type": "text",
+                "text": appointment_title
+              }
+            ]
           }
-        }
-      });
-    }
+      }
+    });
+  
     // Logging the request data
     console.log('Sending WhatsApp message with data:', data);
 
