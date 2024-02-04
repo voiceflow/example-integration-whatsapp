@@ -133,35 +133,55 @@ app.post('/webhook', async (req, res) => {
         }
       } else {
         if (
-          req.body.entry[0].changes[0].value.messages[0].type === "button"
+          req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(
+            'path-'
+          )
         ) {
           await interact(
             user_id,
             {
-              type: 'text',
-              payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
-            },
-            phone_number_id,
-            user_name
-          )
-        } else {
-          await interact(
-            user_id,
-            {
-              type: 'intent',
+              type: req.body.entry[0].changes[0].value.messages[0].interactive
+                .button_reply.id,
               payload: {
-                query:
+                label:
                   req.body.entry[0].changes[0].value.messages[0].interactive
                     .button_reply.title,
-                intent: {
-                  name: req.body.entry[0].changes[0].value.messages[0]
-                    .interactive.button_reply.id,
-                },
-                entities: [],
               },
             },
             phone_number_id,
             user_name
+          )
+        } else if (
+            req.body.entry[0].changes[0].value.messages[0].type === "button"
+          ) {
+            await interact(
+              user_id,
+              {
+                type: 'text',
+                payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
+              },
+              phone_number_id,
+              user_name
+            )
+          }
+          else {
+            await interact(
+              user_id,
+              {
+                type: 'intent',
+                payload: {
+                  query:
+                    req.body.entry[0].changes[0].value.messages[0].interactive
+                      .button_reply.title,
+                  intent: {
+                    name: req.body.entry[0].changes[0].value.messages[0]
+                      .interactive.button_reply.id,
+                  },
+                  entities: [],
+                },
+              },
+              phone_number_id,
+              user_name
           )
         }
       }
