@@ -132,7 +132,18 @@ app.post('/webhook', async (req, res) => {
           })
         }
       } else {
-        if (
+        if (req.body.entry[0].changes[0].value.messages[0].type === "button"
+        ) {
+          await interact(
+            user_id,
+            {
+              type: 'text',
+              payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
+            },
+            phone_number_id,
+            user_name
+          )
+        } else if (
           req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(
             'path-'
           )
@@ -151,20 +162,7 @@ app.post('/webhook', async (req, res) => {
             phone_number_id,
             user_name
           )
-        } else if (
-            req.body.entry[0].changes[0].value.messages[0].type === "button"
-          ) {
-            await interact(
-              user_id,
-              {
-                type: 'text',
-                payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
-              },
-              phone_number_id,
-              user_name
-            )
-          }
-          else {
+        } else {
             await interact(
               user_id,
               {
