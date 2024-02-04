@@ -153,20 +153,13 @@ app.post('/webhook', async (req, res) => {
         }
       } else {
         if (
-          req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(
-            'path-'
-          )
+          req.body.entry[0].changes[0].value.messages[0].type === "button"
         ) {
           await interact(
             user_id,
             {
-              type: req.body.entry[0].changes[0].value.messages[0].interactive
-                .button_reply.id,
-              payload: {
-                label:
-                  req.body.entry[0].changes[0].value.messages[0].interactive
-                    .button_reply.title,
-              },
+              type: 'text',
+              payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
             },
             phone_number_id,
             user_name
@@ -816,7 +809,7 @@ app.post('/template/module', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": "Yes-Button-Payload"
+                    "payload": module_title
                 }
             ]
           },
