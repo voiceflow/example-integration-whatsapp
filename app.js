@@ -51,6 +51,7 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
+  console.log('Incoming message', body);
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
 
@@ -682,8 +683,7 @@ app.post('/template/scheduler', async (req, res) => {
       },
       data: data
     };
-    // Logging the Axios configuration
-    console.log('Axios config:', config);
+
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
@@ -746,8 +746,6 @@ app.post('/template/appointscheduler', async (req, res) => {
       },
       data: data
     };
-    // Logging the Axios configuration
-    console.log('Axios config:', config);
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
@@ -839,8 +837,6 @@ app.post('/template/module', async (req, res) => {
       },
       data: data
     };
-    // Logging the Axios configuration
-    console.log('Axios config:', config);
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
