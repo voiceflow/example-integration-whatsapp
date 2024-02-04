@@ -51,27 +51,7 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
-  console.log('Checking req.body', req.body);
-  if (
-    req.body &&
-    req.body.entry &&
-    req.body.entry[0] &&
-    req.body.entry[0].changes &&
-    req.body.entry[0].changes[0] &&
-    req.body.entry[0].changes[0].value &&
-    req.body.entry[0].changes[0].value.messages &&
-    req.body.entry[0].changes[0].value.messages[0] &&
-    req.body.entry[0].changes[0].value.messages[0].button
-  ) {
-    const { button } = req.body.entry[0].changes[0].value.messages[0];
   
-    console.log("Button Text:", button.text);
-    console.log("Button Payload:", button.payload);
-  
-    // Additional logic or function calls you want to include here
-  } else {
-    console.log("Some properties in the chain are missing or undefined.");
-  }
 
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -682,7 +662,31 @@ app.post('/template/scheduler', async (req, res) => {
         "name": "show_reminder",
         "language": {
           "code": "en"
-        }
+        },
+        "components": [
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 0,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "show_reminder"
+                }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 1,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "snooze_reminder"
+                }
+            ]
+          },
+        ]
       }
     });
     // Logging the request data
