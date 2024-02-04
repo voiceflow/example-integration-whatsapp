@@ -52,15 +52,23 @@ app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
   console.log('Checking req.body', req.body);
-  if (req.body && req.body.entry && req.body.entry[0] && req.body.entry[0].changes && req.body.entry[0].changes[0] && req.body.entry[0].changes[0].value && req.body.entry[0].changes[0].value.messages && req.body.entry[0].changes[0].value.messages[0] && req.body.entry[0].changes[0].value.messages[0].interactive) {
-    console.log("req.body.entry[0].changes[0].value.messages[0].interactive:", req.body.entry[0].changes[0].value.messages[0].interactive);
+  if (
+    req.body &&
+    req.body.entry &&
+    req.body.entry[0] &&
+    req.body.entry[0].changes &&
+    req.body.entry[0].changes[0] &&
+    req.body.entry[0].changes[0].value &&
+    req.body.entry[0].changes[0].value.messages &&
+    req.body.entry[0].changes[0].value.messages[0] &&
+    req.body.entry[0].changes[0].value.messages[0].button
+  ) {
+    const { button } = req.body.entry[0].changes[0].value.messages[0];
   
-    if (req.body.entry[0].changes[0].value.messages[0].interactive.button_reply && req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id && req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.title) {
-      console.log("button_reply.id:", req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id);
-      console.log("button_reply.title:", req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.title);  
-    } else {
-      console.log("Some properties of button_reply are missing or undefined.");
-    }
+    console.log("Button Text:", button.text);
+    console.log("Button Payload:", button.payload);
+  
+    // Additional logic or function calls you want to include here
   } else {
     console.log("Some properties in the chain are missing or undefined.");
   }
