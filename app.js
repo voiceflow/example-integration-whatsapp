@@ -669,7 +669,7 @@ app.post('/intent', async (req, res) => {
 
 app.post('/template/scheduler', async (req, res) => {
   try {
-    const { user_id, phone_number_id } = req.body;
+    const { user_id, phone_number_id, reminder_text } = req.body;
     let user_id_plain = decrypt(user_id);
     let data = JSON.stringify({
       "messaging_product": "whatsapp",
@@ -682,6 +682,15 @@ app.post('/template/scheduler', async (req, res) => {
           "code": "en"
         },
         "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": reminder_text
+              }
+            ]
+          }, 
           {
             "type": "button",
             "sub_type": "quick_reply",
