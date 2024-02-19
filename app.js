@@ -840,7 +840,7 @@ app.post('/template/module', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": module_title
+                    "payload": "Module_Yes_Handback_" + module_title
                 }
             ]
           },
@@ -851,7 +851,7 @@ app.post('/template/module', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": "No, remind me in 2 days-Button-Payload"
+                    "payload": "Remind_2_days_Handback_" + module_title
                 }
             ]
           },
@@ -862,7 +862,7 @@ app.post('/template/module', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": "I am not interested-Button-Payload"
+                    "payload": "Not_Interested_Handback_" + module_title
                 }
             ]
           }
