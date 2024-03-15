@@ -791,36 +791,16 @@ app.post('/template/appointscheduler', async (req, res) => {
       },
       data: data
     };
-
-    const whatsappResponse = await axios(whatsappConfig);
-    console.log('WhatsApp API response:', whatsappResponse.data);
-
-
-     // The new API call for App Rem
-    let apiData = JSON.stringify({
-      "user_id": user_id,
-      "topic_name": "app_rem_count",
-      "time_point": "n.a.",
-      "query_value": "n.a."
-    });
-
-    let apiConfig = {
-      method: 'post',
-      url: 'https://ayo-tracker.azurewebsites.net/v1',
-      headers: { 
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      data: apiData
-    };
-
-    const apiResponse = await axios(apiConfig);
-    console.log('Additional API call response:', apiResponse.data);
-
+   
+    const response = await axios(config);
+    // Logging the response from the WhatsApp API
+    console.log('WhatsApp API response:', response.data);
     res.status(200).end();
   } catch (error) {
+    // Detailed error logging
     console.error('Error occurred:', error.message);
     if (error.response) {
+      // Log more detailed API response error
       console.error('API response error:', error.response.data);
     }
     res.status(500).send('Internal Server Error');
