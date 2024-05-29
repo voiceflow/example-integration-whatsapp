@@ -717,7 +717,7 @@ app.post('/template/scheduler', async (req, res) => {
       }
     });
     // Logging the request data
-    console.log('Sending WhatsApp message with data:', data);
+    // console.log('Sending WhatsApp message with data:', data);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -732,7 +732,7 @@ app.post('/template/scheduler', async (req, res) => {
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
-    console.log('WhatsApp API response:', response.data);
+    // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
   } catch (error) {
     // Detailed error logging
@@ -780,7 +780,7 @@ app.post('/template/appointscheduler', async (req, res) => {
     });
   
     // Logging the request data
-    console.log('Sending WhatsApp message with data:', data);
+    // console.log('Sending WhatsApp message with data:', data);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -794,7 +794,7 @@ app.post('/template/appointscheduler', async (req, res) => {
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
-    console.log('WhatsApp API response:', response.data);
+    // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
   } catch (error) {
     // Detailed error logging
@@ -871,7 +871,7 @@ app.post('/template/module', async (req, res) => {
     });
   
     // Logging the request data
-    console.log('Sending WhatsApp message with data:', data);
+    // console.log('Sending WhatsApp message with data:', data);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -885,7 +885,7 @@ app.post('/template/module', async (req, res) => {
    
     const response = await axios(config);
     // Logging the response from the WhatsApp API
-    console.log('WhatsApp API response:', response.data);
+    // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
   } catch (error) {
     // Detailed error logging
