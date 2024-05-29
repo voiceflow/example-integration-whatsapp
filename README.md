@@ -2,6 +2,9 @@
 How to use WhatsApp Cloud API with Voiceflow Dialog Manager API
 * * *
 
+## Before you begin
+This guide is intended for people building an integration for their own organizations. If you are building an integration that will be used by another business, see Meta's [Get Started for Solution Partners doc](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started-for-solution-partners) or their [Get Started for Tech Providers doc](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started-for-tech-providers).
+
 
 # Create an app on Facebook Developers portal
 
@@ -68,7 +71,7 @@ Now go to the **Accounts** section > **WhatsApp Accounts** and click on **Add pe
 
 Select the newly created system account, toggle **Full control** and click on **Assign**
 ![business account](/doc/wa_select_system.png)<br>
-
+![business account valid](/doc/wa_business_valid.png)<br>
 
 Go back to your **Dashboard** (https://developers.facebook.com/apps/) and link an existing number or create a new one
 ![add number](/doc/add-number.png)
