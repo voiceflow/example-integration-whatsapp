@@ -51,7 +51,8 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
-  console.log('Incoming post request at /webhook:', req.body.entry[0].changes[0].value.messages[0].text.body);
+  let incoming_message = req.body.entry[0].changes[0].value.messages[0].text.body
+  console.log('Incoming post request at /webhook:', incoming_message)
 
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
