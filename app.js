@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
-  console.log('Incoming post request at /webhook:', body)
+  console.log('Incoming post request at /webhook:', req.body.entry[0].changes[0].value.messages[0].text.body);
 
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -64,9 +64,11 @@ app.post('/webhook', async (req, res) => {
         req.body.entry[0].changes[0].value.metadata.phone_number_id
       user_id = req.body.entry[0].changes[0].value.messages[0].from // extract the phone number from the webhook payload
       user_id = encrypt(user_id);
+      console.log('Encrypted user_id:', user_id);
       let user_name =
         req.body.entry[0].changes[0].value.contacts[0].profile.name
       user_name = encrypt(user_name);
+      console.log('Encrypted user_name:', user_name);
       if (req.body.entry[0].changes[0].value.messages[0].text) {
         if(req.body.entry[0].changes[0].value.messages[0].text.body.startsWith("/restart")){
           deleteUserState(user_id);
