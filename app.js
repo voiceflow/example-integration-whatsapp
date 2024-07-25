@@ -246,7 +246,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
   })
 
   // Log the data to the console
-  console.log('Request Body:', body);
   console.log('user_id: ', user_id);
   console.log('user_name: ', user_name);
   console.log('session: ', session);
