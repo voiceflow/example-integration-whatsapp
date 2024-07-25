@@ -245,8 +245,15 @@ async function interact(user_id, request, phone_number_id, user_name) {
     },
   })
 
+  // Log the data to the console
+  console.log('Request Body:', body);
+  console.log('user_id: ', user_id);
+  console.log('user_name: ', user_name);
+  console.log('session: ', session);
+  console.log('action: ', request);
+  console.log('config: ', DMconfig);
 
-  // Sandro new to nlu_protection post call parallel to other
+  // Sandro #1 new to nlu_protection post call parallel to other
   try {
     await axios({
       method: 'POST',
@@ -258,15 +265,13 @@ async function interact(user_id, request, phone_number_id, user_name) {
       data: {
         user_id: user_id,
         user_name: user_name,
-        session: session,
-        action: request,
-        config: DMconfig,
       },
     });
   } catch (error) {
   console.error('Error during POST to /variables request:', error);
   }
 
+  // Sandro #2 new to nlu_protection post call parallel to other
   try {
     await axios({
       method: 'POST',
