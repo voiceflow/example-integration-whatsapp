@@ -7,6 +7,9 @@ const VF_API_KEY = process.env.VF_API_KEY
 const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
 const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
 
+const NLU_PROTECTION_URL = process.env.NLU_PROTECTION_URL || null
+
+
 const fs = require('fs')
 
 const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
@@ -241,6 +244,43 @@ async function interact(user_id, request, phone_number_id, user_name) {
       user_name: user_name,
     },
   })
+
+
+  // Sandro new to nlu_protection post call parallel to other
+  await axios({
+    method: 'POST',
+    url: `${NLU_PROTECTION_URL}/variables`,
+    headers: {
+      Authorization: VF_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    data: {
+      user_id: user_id,
+      user_name: user_name,
+      session: session,
+      action: request,
+      config: DMconfig,
+    },
+  })
+
+  await axios({
+    method: 'POST',
+    url: `${NLU_PROTECTION_URL}/interact`,
+    headers: {
+      Authorization: VF_API_KEY,
+      'Content-Type': 'application/json',
+      versionID: VF_VERSION_ID,
+      sessionID: session
+    },
+    data: {
+      user_id: user_id,
+      user_name: user_name,
+      session: session,
+      action: request,
+      config: DMconfig,
+    },
+  })
+
 
   let response = await axios({
     method: 'POST',
