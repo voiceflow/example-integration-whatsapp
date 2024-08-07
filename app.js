@@ -8,7 +8,7 @@ const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
 const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
 
 const NLU_PROTECTION_URL = process.env.NLU_PROTECTION_URL || null
-
+const AYO_TRACKER_URL = process.env.AYO_TRACKER_URL || null
 
 const fs = require('fs')
 
@@ -244,6 +244,30 @@ async function interact(user_id, request, phone_number_id, user_name) {
       user_name: user_name,
     },
   })
+
+  // Sandro um "last_conversation" zu Aktualisieren
+  const now = new Date();
+  const formattedDate = now.toISOString();
+  try {
+    const response = await axios({
+      method: 'POST',
+      url: `${AYO_TRACKER_URL}/v1`,
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_id: user_id,
+        topic_name: "last_conversation",
+        time_point: "n.a.",
+        query_value: formattedDate,
+      },
+    });
+
+    console.log('Response:', response.data);
+  } catch (error) {
+    console.error('Error during POST request:', error.response ? error.response.data : error.message);
+  }
 
   // Sandro #1 new to nlu_protection post call parallel to other
   try {
