@@ -268,19 +268,19 @@ async function interact(user_id, request, phone_number_id, user_name) {
   const formattedDate = rightNow.toISOString();
   // first, check if user entry is existing
   try {
-    const responseTracker = await axios({
-      method: 'POST',
-      url: `${AYO_TRACKER_URL}/v2`,
-      headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        user_id: user_id,
-      }
-    });
-    console.log('responseTracker:', responseTracker)
-    if (responseTracker.data.message !== "no user entry") {
+    // const responseTracker = await axios({
+    //   method: 'POST',
+    //   url: `${AYO_TRACKER_URL}/v2`,
+    //   headers: {
+    //     'accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   data: {
+    //     user_id: user_id,
+    //   }
+    // });
+    // console.log('responseTracker status:', responseTracker.status)
+    // if (responseTracker.data.message !== "no user entry") {
       await axios({
         method: 'POST',
         url: `${AYO_TRACKER_URL}/v1`,
@@ -295,9 +295,9 @@ async function interact(user_id, request, phone_number_id, user_name) {
           query_value: formattedDate,
         },
       });
-    } else {
-      console.log('No user entry found, no action needed.');
-    }
+    // } else {
+    //   console.log('No user entry found, no action needed.');
+    // }
   } catch (error) {
     console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
   }
@@ -341,7 +341,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
         config: DMconfig,
       },
     });
-  console.log('response:', response);
+  console.log('response status:', response.status);
 
 // existing code from VF
 //   let response = await axios({
@@ -987,6 +987,87 @@ app.post('/template/module', async (req, res) => {
       data: data
     };
    
+    const response = await axios(config);
+    // Logging the response from the WhatsApp API
+    // console.log('WhatsApp API response:', response.data);
+    res.status(200).end();
+  } catch (error) {
+    // Detailed error logging
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      // Log more detailed API response error
+      console.error('API response error:', error.response.data);
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+// code from sandro (general push)
+
+app.post('/template/general', async (req, res) => {
+  try {
+    const { user_id, phone_number_id, general_content } = req.body;
+    let user_id_plain = decrypt(user_id);
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id_plain,
+      "type": "template",
+      "template": {
+        "name": "general_push",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": general_content
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 0,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "Yes_" + general_content
+                }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 1,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "No_" + module_title
+                }
+            ]
+          },
+        ]
+      }
+    });
+
+    // Logging the request data
+    // console.log('Sending WhatsApp message with data:', data);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+      },
+      data: data
+    };
+
     const response = await axios(config);
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
