@@ -341,7 +341,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
         config: DMconfig,
       },
     });
-  console.log('response status:', response.status);
+  console.log('response status nlu_protection/interact:', response.status);
 
 // existing code from VF
 //   let response = await axios({
@@ -1047,7 +1047,7 @@ app.post('/template/general', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": "No_" + module_title
+                    "payload": "No_" + general_content
                 }
             ]
           },
