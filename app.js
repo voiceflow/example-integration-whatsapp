@@ -245,29 +245,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
     },
   })
 
-  // Sandro um "last_conversation" zu Aktualisieren
-  const now = new Date();
-  const formattedDate = now.toISOString();
-  try {
-    await axios({
-      method: 'POST',
-      url: `${AYO_TRACKER_URL}/v1`,
-      headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        user_id: user_id,
-        topic_name: "last_conversation",
-        time_point: "n.a.",
-        query_value: formattedDate,
-      },
-    });
-
-    console.log('Response:', response.data);
-  } catch (error) {
-    console.error('Error during last conversation POST request:', error.response ? error.response.data : error.message);
-  }
 
   // Sandro #1 new to nlu_protection post call parallel to other
   try {
@@ -514,6 +491,31 @@ async function interact(user_id, request, phone_number_id, user_name) {
   await sendMessage(messages, phone_number_id, user_id)
   if (isEnding == true) {
     session = null
+  }
+
+
+  // Sandro um "last_conversation" zu Aktualisieren
+  const now = new Date();
+  const formattedDate = now.toISOString();
+  try {
+    await axios({
+      method: 'POST',
+      url: `${AYO_TRACKER_URL}/v1`,
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_id: user_id,
+        topic_name: "last_conversation",
+        time_point: "n.a.",
+        query_value: formattedDate,
+      },
+    });
+
+    console.log('Response:', response.data);
+  } catch (error) {
+    console.error('Error during last conversation POST request:', error.response ? error.response.data : error.message);
   }
 }
 
