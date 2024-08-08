@@ -497,23 +497,37 @@ async function interact(user_id, request, phone_number_id, user_name) {
   // Sandro um "last_conversation" zu Aktualisieren
   const now = new Date();
   const formattedDate = now.toISOString();
+  // first, check if user entry is existing
   try {
-    await axios({
+    const responseTracker = await axios({
       method: 'POST',
-      url: `${AYO_TRACKER_URL}/v1`,
+      url: `${AYO_TRACKER_URL}/v2`,
       headers: {
         'accept': 'application/json',
         'Content-Type': 'application/json',
       },
       data: {
         user_id: user_id,
-        topic_name: "last_conversation",
-        time_point: "n.a.",
-        query_value: formattedDate,
-      },
+      }
     });
-
-    console.log('Response:', response.data);
+    if (responseTracker.data.message !== "no user entry") {
+      await axios({
+        method: 'POST',
+        url: `${AYO_TRACKER_URL}/v1`,
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          user_id: user_id,
+          topic_name: "last_conversation",
+          time_point: "n.a.",
+          query_value: formattedDate,
+        },
+      });
+    } else {
+      console.log('No user entry found, no action needed.');
+    }
   } catch (error) {
     console.error('Error during last conversation POST request:', error.response ? error.response.data : error.message);
   }
