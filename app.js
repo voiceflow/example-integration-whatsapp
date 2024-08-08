@@ -55,7 +55,7 @@ app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
 
-  // Log the request body
+  // Sandro: Log the request body
   console.log('Request Body:', body);
 
   // Check the Incoming webhook message
@@ -249,7 +249,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
   const now = new Date();
   const formattedDate = now.toISOString();
   try {
-    const response = await axios({
+    await axios({
       method: 'POST',
       url: `${AYO_TRACKER_URL}/v1`,
       headers: {
@@ -266,7 +266,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
 
     console.log('Response:', response.data);
   } catch (error) {
-    console.error('Error during POST request:', error.response ? error.response.data : error.message);
+    console.error('Error during last conversation POST request:', error.response ? error.response.data : error.message);
   }
 
   // Sandro #1 new to nlu_protection post call parallel to other
