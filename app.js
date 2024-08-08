@@ -56,7 +56,7 @@ app.post('/webhook', async (req, res) => {
   let body = req.body
 
   // Sandro: Log the request body
-  console.log('Request Body:', body);
+  // console.log('Request Body:', body);
 
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -264,6 +264,46 @@ async function interact(user_id, request, phone_number_id, user_name) {
   console.error('Error during POST to /variables request:', error);
   }
 
+
+  // Sandro um "last_conversation" zu Aktualisieren
+  const now = new Date();
+  const formattedDate = now.toISOString();
+  // first, check if user entry is existing
+  try {
+    const responseTracker = await axios({
+      method: 'POST',
+      url: `${AYO_TRACKER_URL}/v2`,
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_id: user_id,
+      }
+    });
+    console.log('responseTracker:', responseTracker)
+    if (responseTracker.data.message !== "no user entry") {
+      await axios({
+        method: 'POST',
+        url: `${AYO_TRACKER_URL}/v1`,
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          user_id: user_id,
+          topic_name: "last_conversation",
+          time_point: "n.a.",
+          query_value: formattedDate,
+        },
+      });
+    } else {
+      console.log('No user entry found, no action needed.');
+    }
+  } catch (error) {
+    console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
+  }
+  console.log('Continuing with the rest of the code...');
   // Sandro #2 new to nlu_protection post call parallel to other
   // try {
   //   await axios({
@@ -286,24 +326,28 @@ async function interact(user_id, request, phone_number_id, user_name) {
   // } catch (error) {
   //   console.error('Error during POST to /interact: request', error);
   // }
-
-  let response = await axios({
-      method: 'POST',
-      url: `${NLU_PROTECTION_URL}/interact`,
-      headers: {
-        Authorization: VF_API_KEY,
-        'Content-Type': 'application/json',
-        versionID: VF_VERSION_ID,
-        sessionID: session
-      },
-      data: {
-        user_id: user_id,
-        user_name: user_name,
-        session: session,
-        action: request,
-        config: DMconfig,
-      },
-    });
+  try {
+    let response = await axios({
+        method: 'POST',
+        url: `${NLU_PROTECTION_URL}/interact`,
+        headers: {
+          Authorization: VF_API_KEY,
+          'Content-Type': 'application/json',
+          versionID: VF_VERSION_ID,
+          sessionID: session
+        },
+        data: {
+          user_id: user_id,
+          user_name: user_name,
+          session: session,
+          action: request,
+          config: DMconfig,
+        },
+      });
+    console.log('response:', response);
+    } catch (error) {
+        console.error('Error during POST to /interact: request', error);
+  }
 
 // existing code from VF
 //   let response = await axios({
@@ -491,45 +535,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
   await sendMessage(messages, phone_number_id, user_id)
   if (isEnding == true) {
     session = null
-  }
-
-
-  // Sandro um "last_conversation" zu Aktualisieren
-  const now = new Date();
-  const formattedDate = now.toISOString();
-  // first, check if user entry is existing
-  try {
-    const responseTracker = await axios({
-      method: 'POST',
-      url: `${AYO_TRACKER_URL}/v2`,
-      headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      data: {
-        user_id: user_id,
-      }
-    });
-    if (responseTracker.data.message !== "no user entry") {
-      await axios({
-        method: 'POST',
-        url: `${AYO_TRACKER_URL}/v1`,
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          user_id: user_id,
-          topic_name: "last_conversation",
-          time_point: "n.a.",
-          query_value: formattedDate,
-        },
-      });
-    } else {
-      console.log('No user entry found, no action needed.');
-    }
-  } catch (error) {
-    console.error('Error during last conversation POST request:', error.response ? error.response.data : error.message);
   }
 }
 
