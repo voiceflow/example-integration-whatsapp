@@ -245,63 +245,63 @@ async function interact(user_id, request, phone_number_id, user_name) {
     },
   })
 
-  // Sandro #1 new to nlu_protection post call parallel to other
-  try {
-    await axios({
-      method: 'POST',
-      url: `${NLU_PROTECTION_URL}/variables`,
-      headers: {
-        Authorization: VF_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      data: {
-        user_id: user_id,
-        user_name: user_name,
-      },
-    });
-  } catch (error) {
-  console.error('Error during POST to /variables request:', error);
-  }
-
-  // Sandro um "last_conversation"
-  const rightNow = new Date();
-  const formattedDate = rightNow.toISOString();
-  // first, check if user entry is existing
-  try {
-    // const responseTracker = await axios({
-    //   method: 'POST',
-    //   url: `${AYO_TRACKER_URL}/v2`,
-    //   headers: {
-    //     'accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   data: {
-    //     user_id: user_id,
-    //   }
-    // });
-    // console.log('responseTracker status:', responseTracker.status)
-    // if (responseTracker.data.message !== "no user entry") {
-      await axios({
-        method: 'POST',
-        url: `${AYO_TRACKER_URL}/v1`,
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          user_id: user_id,
-          topic_name: "last_conversation",
-          time_point: "n.a.",
-          query_value: formattedDate,
-        },
-      });
-    // } else {
-    //   console.log('No user entry found, no action needed.');
-    // }
-  } catch (error) {
-    console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
-  }
-  console.log('Continuing with the rest of the code...');
+  // // Sandro #1 new to nlu_protection post call parallel to other
+  // try {
+  //   await axios({
+  //     method: 'POST',
+  //     url: `${NLU_PROTECTION_URL}/variables`,
+  //     headers: {
+  //       Authorization: VF_API_KEY,
+  //       'Content-Type': 'application/json',
+  //     },
+  //     data: {
+  //       user_id: user_id,
+  //       user_name: user_name,
+  //     },
+  //   });
+  // } catch (error) {
+  // console.error('Error during POST to /variables request:', error);
+  // }
+  //
+  // // Sandro um "last_conversation"
+  // const rightNow = new Date();
+  // const formattedDate = rightNow.toISOString();
+  // // first, check if user entry is existing
+  // try {
+  //   // const responseTracker = await axios({
+  //   //   method: 'POST',
+  //   //   url: `${AYO_TRACKER_URL}/v2`,
+  //   //   headers: {
+  //   //     'accept': 'application/json',
+  //   //     'Content-Type': 'application/json',
+  //   //   },
+  //   //   data: {
+  //   //     user_id: user_id,
+  //   //   }
+  //   // });
+  //   // console.log('responseTracker status:', responseTracker.status)
+  //   // if (responseTracker.data.message !== "no user entry") {
+  //     await axios({
+  //       method: 'POST',
+  //       url: `${AYO_TRACKER_URL}/v1`,
+  //       headers: {
+  //         'accept': 'application/json',
+  //         'Content-Type': 'application/json',
+  //       },
+  //       data: {
+  //         user_id: user_id,
+  //         topic_name: "last_conversation",
+  //         time_point: "n.a.",
+  //         query_value: formattedDate,
+  //       },
+  //     });
+  //   // } else {
+  //   //   console.log('No user entry found, no action needed.');
+  //   // }
+  // } catch (error) {
+  //   console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
+  // }
+  // console.log('Continuing with the rest of the code...');
   // Sandro #2 new to nlu_protection post call parallel to other
   // try {
   //   await axios({
@@ -1047,7 +1047,7 @@ app.post('/template/general', async (req, res) => {
             "parameters": [
                 {
                     "type": "payload",
-                    "payload": "No_" + general_content
+                    "payload": "Module_General_No"
                 }
             ]
           },
