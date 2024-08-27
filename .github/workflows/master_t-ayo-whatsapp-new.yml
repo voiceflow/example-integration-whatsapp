@@ -58,5 +58,5 @@ jobs:
         with:
           app-name: 't-ayo-whatsapp-new'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_424C3B2003B34D1EAF783BBEF5B71953 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_734A50294F9F4DA899CF2EC65BE084C0 }}
           package: .
