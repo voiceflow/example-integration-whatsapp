@@ -78,6 +78,9 @@ typings/
 # Next.js build output
 .next
 
+# workflows
+.github/workflows/
+
 # Nuxt.js build / generate output
 .nuxt
 dist
