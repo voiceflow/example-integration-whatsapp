@@ -7,6 +7,9 @@ const VF_API_KEY = process.env.VF_API_KEY
 const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
 const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
 
+const NLU_PROTECTION_URL = process.env.NLU_PROTECTION_URL || null
+const AYO_TRACKER_URL = process.env.AYO_TRACKER_URL || null
+
 const fs = require('fs')
 
 const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
@@ -51,7 +54,9 @@ app.get('/', (req, res) => {
 app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
-  
+
+  // Sandro: Log the request body
+  // console.log('Request Body:', body);
 
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
@@ -227,33 +232,114 @@ async function interact(user_id, request, phone_number_id, user_name) {
     session = `${VF_VERSION_ID}.${rndID()}`
   }
 
-  await axios({
-    method: 'PATCH',
-    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/variables`,
-    headers: {
-      Authorization: VF_API_KEY,
-      'Content-Type': 'application/json',
-    },
-    data: {
-      user_id: user_id,
-      user_name: user_name,
-    },
-  })
 
+  // existing code from VF #1
+  // await axios({
+  //   method: 'PATCH',
+  //   url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/variables`,
+  //   headers: {
+  //     Authorization: VF_API_KEY,
+  //     'Content-Type': 'application/json',
+  //   },
+  //   data: {
+  //     user_id: user_id,
+  //     user_name: user_name,
+  //   },
+  // })
+
+  // // Sandro #1 new to nlu_protection post call
+  try {
+    await axios({
+      method: 'POST',
+      url: `${NLU_PROTECTION_URL}/variables`,
+      headers: {
+        Authorization: VF_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        user_id: user_id,
+        user_name: user_name,
+      },
+    });
+  } catch (error) {
+  console.error('Error during POST to /variables request:', error);
+  }
+
+  // // Sandro um "last_conversation"
+  const rightNow = new Date();
+  const formattedDate = rightNow.toISOString();
+  // first, check if user entry is existing
+  try {
+    // const responseTracker = await axios({
+    //   method: 'POST',
+    //   url: `${AYO_TRACKER_URL}/v2`,
+    //   headers: {
+    //     'accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   data: {
+    //     user_id: user_id,
+    //   }
+    // });
+    // console.log('responseTracker status:', responseTracker.status)
+    // if (responseTracker.data.message !== "no user entry") {
+      await axios({
+        method: 'POST',
+        url: `${AYO_TRACKER_URL}/v1`,
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          user_id: user_id,
+          topic_name: "last_conversation",
+          time_point: "n.a.",
+          query_value: formattedDate,
+        },
+      });
+    // } else {
+    //   console.log('No user entry found, no action needed.');
+    // }
+  } catch (error) {
+    console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
+  }
+  console.log('Continuing with the rest of the code...');
+
+  // new code from Sandro (wieder einblenden)
   let response = await axios({
-    method: 'POST',
-    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/interact`,
-    headers: {
-      Authorization: VF_API_KEY,
-      'Content-Type': 'application/json',
-      versionID: VF_VERSION_ID,
-      sessionID: session,
-    },
-    data: {
-      action: request,
-      config: DMconfig,
-    },
-  })
+      method: 'POST',
+      url: `${NLU_PROTECTION_URL}/interact`,
+      headers: {
+        Authorization: VF_API_KEY,
+        'Content-Type': 'application/json',
+        versionID: VF_VERSION_ID,
+        sessionID: session
+      },
+      data: {
+        user_id: user_id,
+        user_name: user_name,
+        session: session,
+        action: request,
+        config: DMconfig,
+      },
+    });
+  console.log('response status nlu_protection/interact:', response.status);
+
+// existing code from VF
+//   let response = await axios({
+//     method: 'POST',
+//     url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/interact`,
+//     headers: {
+//       Authorization: VF_API_KEY,
+//       'Content-Type': 'application/json',
+//       versionID: VF_VERSION_ID,
+//       sessionID: session,
+//     },
+//     data: {
+//       action: request,
+//       config: DMconfig,
+//     },
+//   })
 
   let isEnding = response.data.filter(({ type }) => type === 'end')
   if (isEnding.length > 0) {
@@ -883,6 +969,87 @@ app.post('/template/module', async (req, res) => {
       data: data
     };
    
+    const response = await axios(config);
+    // Logging the response from the WhatsApp API
+    // console.log('WhatsApp API response:', response.data);
+    res.status(200).end();
+  } catch (error) {
+    // Detailed error logging
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      // Log more detailed API response error
+      console.error('API response error:', error.response.data);
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+// code from sandro (general push)
+
+app.post('/template/general', async (req, res) => {
+  try {
+    const { user_id, phone_number_id, general_content } = req.body;
+    let user_id_plain = decrypt(user_id);
+    let data = JSON.stringify({
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": user_id_plain,
+      "type": "template",
+      "template": {
+        "name": "general_push",
+        "language": {
+          "code": "en"
+        },
+        "components": [
+          {
+            "type": "body",
+            "parameters": [
+              {
+                "type": "text",
+                "text": general_content
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 0,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "Yes_" + general_content
+                }
+            ]
+          },
+          {
+            "type": "button",
+            "sub_type": "quick_reply",
+            "index": 1,
+            "parameters": [
+                {
+                    "type": "payload",
+                    "payload": "Module_General_No"
+                }
+            ]
+          },
+        ]
+      }
+    });
+
+    // Logging the request data
+    // console.log('Sending WhatsApp message with data:', data);
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
+      },
+      data: data
+    };
+
     const response = await axios(config);
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
