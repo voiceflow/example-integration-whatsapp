@@ -79,7 +79,7 @@ app.post('/webhook', async (req, res) => {
         }
         const textBody = req.body.entry[0].changes[0].value.messages[0].text.body;
         console.log('Text Input, body:', textBody);
-        await interact(
+        await interact_text(
           user_id,
           {
             type: 'text',
@@ -238,7 +238,298 @@ app.get('/webhook', (req, res) => {
   }
 })
 
+// Sandro existing interact function from VF
+
 async function interact(user_id, request, phone_number_id, user_name) {
+  clearTimeout(noreplyTimeout)
+  if (!session) {
+    session = `${VF_VERSION_ID}.${rndID()}`
+  }
+
+
+  // existing code from VF #1
+  await axios({
+    method: 'PATCH',
+    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/variables`,
+    headers: {
+      Authorization: VF_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    data: {
+      user_id: user_id,
+      user_name: user_name,
+    },
+  })
+
+  // // // Sandro #1 new to nlu_protection post call
+  // try {
+  //   await axios({
+  //     method: 'POST',
+  //     url: `${NLU_PROTECTION_URL}/variables`,
+  //     headers: {
+  //       Authorization: VF_API_KEY,
+  //       'Content-Type': 'application/json',
+  //     },
+  //     data: {
+  //       user_id: user_id,
+  //       user_name: user_name,
+  //     },
+  //   });
+  // } catch (error) {
+  // console.error('Error during POST to /variables request:', error);
+  // }
+
+  // // Sandro um "last_conversation"
+  const rightNow = new Date();
+  const formattedDate = rightNow.toISOString();
+  // first, check if user entry is existing
+  try {
+    // const responseTracker = await axios({
+    //   method: 'POST',
+    //   url: `${AYO_TRACKER_URL}/v2`,
+    //   headers: {
+    //     'accept': 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   data: {
+    //     user_id: user_id,
+    //   }
+    // });
+    // console.log('responseTracker status:', responseTracker.status)
+    // if (responseTracker.data.message !== "no user entry") {
+      await axios({
+        method: 'POST',
+        url: `${AYO_TRACKER_URL}/v1`,
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          user_id: user_id,
+          topic_name: "last_conversation",
+          time_point: "n.a.",
+          query_value: formattedDate,
+        },
+      });
+    // } else {
+    //   console.log('No user entry found, no action needed.');
+    // }
+  } catch (error) {
+    console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
+  }
+
+  // // new code from Sandro (wieder einblenden)
+  // let response = await axios({
+  //     method: 'POST',
+  //     url: `${NLU_PROTECTION_URL}/interact`,
+  //     headers: {
+  //       Authorization: VF_API_KEY,
+  //       'Content-Type': 'application/json',
+  //       versionID: VF_VERSION_ID,
+  //       sessionID: session
+  //     },
+  //     data: {
+  //       user_id: user_id,
+  //       user_name: user_name,
+  //       session: session,
+  //       action: request,
+  //       config: DMconfig,
+  //     },
+  //   });
+  // console.log('response status nlu_protection/interact:', response.status);
+
+  // existing code from VF
+  let response = await axios({
+    method: 'POST',
+    url: `${VF_DM_URL}/state/user/${encodeURI(user_id)}/interact`,
+    headers: {
+      Authorization: VF_API_KEY,
+      'Content-Type': 'application/json',
+      versionID: VF_VERSION_ID,
+      sessionID: session,
+    },
+    data: {
+      action: request,
+      config: DMconfig,
+    },
+  })
+
+  let isEnding = response.data.filter(({ type }) => type === 'end')
+  if (isEnding.length > 0) {
+    console.log('isEnding')
+    console.log("user_id: " + user_id)
+    isEnding = true
+    saveTranscript(user_name)
+  } else {
+    isEnding = false
+  }
+
+  let messages = []
+
+  for (let i = 0; i < response.data.length; i++) {
+    if (response.data[i].type == 'text') {
+      let tmpspeech = ''
+
+      for (let j = 0; j < response.data[i].payload.slate.content.length; j++) {
+        for (
+          let k = 0;
+          k < response.data[i].payload.slate.content[j].children.length;
+          k++
+        ) {
+          if (response.data[i].payload.slate.content[j].children[k].type) {
+            if (
+              response.data[i].payload.slate.content[j].children[k].type ==
+              'link'
+            ) {
+              tmpspeech +=
+                response.data[i].payload.slate.content[j].children[k].url
+            }
+          } else if (
+            response.data[i].payload.slate.content[j].children[k].text != '' &&
+            response.data[i].payload.slate.content[j].children[k].fontWeight
+          ) {
+            tmpspeech +=
+              '*' +
+              response.data[i].payload.slate.content[j].children[k].text +
+              '*'
+          } else if (
+            response.data[i].payload.slate.content[j].children[k].text != '' &&
+            response.data[i].payload.slate.content[j].children[k].italic
+          ) {
+            tmpspeech +=
+              '_' +
+              response.data[i].payload.slate.content[j].children[k].text +
+              '_'
+          } else if (
+            response.data[i].payload.slate.content[j].children[k].text != '' &&
+            response.data[i].payload.slate.content[j].children[k].underline
+          ) {
+            tmpspeech +=
+              // no underline in WhatsApp
+              response.data[i].payload.slate.content[j].children[k].text
+          } else if (
+            response.data[i].payload.slate.content[j].children[k].text != '' &&
+            response.data[i].payload.slate.content[j].children[k].strikeThrough
+          ) {
+            tmpspeech +=
+              '~' +
+              response.data[i].payload.slate.content[j].children[k].text +
+              '~'
+          } else if (
+            response.data[i].payload.slate.content[j].children[k].text != ''
+          ) {
+            tmpspeech +=
+              response.data[i].payload.slate.content[j].children[k].text
+          }
+        }
+        tmpspeech += '\n'
+      }
+      if (
+        response.data[i + 1]?.type &&
+        response.data[i + 1]?.type == 'choice'
+      ) {
+        messages.push({
+          type: 'body',
+          value: tmpspeech,
+        })
+      } else {
+        messages.push({
+          type: 'text',
+          value: tmpspeech,
+        })
+      }
+    } else if (response.data[i].type == 'speak') {
+      if (response.data[i].payload.type == 'audio') {
+        messages.push({
+          type: 'audio',
+          value: response.data[i].payload.src,
+        })
+      } else {
+        if (
+          response.data[i + 1]?.type &&
+          response.data[i + 1]?.type == 'choice'
+        ) {
+          messages.push({
+            type: 'body',
+            value: response.data[i].payload.message,
+          })
+        } else {
+          messages.push({
+            type: 'text',
+            value: response.data[i].payload.message,
+          })
+        }
+      }
+    } else if (response.data[i].type == 'visual') {
+      messages.push({
+        type: 'image',
+        value: response.data[i].payload.image,
+      })
+    } else if (response.data[i].type == 'choice') {
+      let buttons = []
+      for (let b = 0; b < response.data[i].payload.buttons.length; b++) {
+        let link = null
+        if (
+          response.data[i].payload.buttons[b].request.payload.actions !=
+            undefined &&
+          response.data[i].payload.buttons[b].request.payload.actions.length > 0
+        ) {
+          link =
+            response.data[i].payload.buttons[b].request.payload.actions[0]
+              .payload.url
+        }
+        if (link) {
+          // Ignore links
+        } else if (
+          response.data[i].payload.buttons[b].request.type.includes('path-')
+        ) {
+          let id = response.data[i].payload.buttons[b].request.payload.label
+          buttons.push({
+            type: 'reply',
+            reply: {
+              id: response.data[i].payload.buttons[b].request.type,
+              title:
+                truncateString(
+                  response.data[i].payload.buttons[b].request.payload.label
+                ) ?? '',
+            },
+          })
+        } else {
+          buttons.push({
+            type: 'reply',
+            reply: {
+              id: response.data[i].payload.buttons[b].request.payload.intent
+                .name,
+              title:
+                truncateString(
+                  response.data[i].payload.buttons[b].request.payload.label
+                ) ?? '',
+            },
+          })
+        }
+      }
+      if (buttons.length > 3) {
+        buttons = buttons.slice(0, 3)
+      }
+      messages.push({
+        type: 'buttons',
+        buttons: buttons,
+      })
+    } else if (response.data[i].type == 'no-reply' && isEnding == false) {
+      noreplyTimeout = setTimeout(function () {
+        sendNoReply(user_id, request, phone_number_id, user_name)
+      }, Number(response.data[i].payload.timeout) * 1000)
+    }
+  }
+  await sendMessage(messages, phone_number_id, user_id)
+  if (isEnding == true) {
+    session = null
+  }
+}
+
+// Sandro await interact function only for text that sends it to PII NLU Protection:
+// ###############################
+async function interact_text(user_id, request, phone_number_id, user_name) {
   clearTimeout(noreplyTimeout)
   if (!session) {
     session = `${VF_VERSION_ID}.${rndID()}`
@@ -524,6 +815,8 @@ async function interact(user_id, request, phone_number_id, user_name) {
     session = null
   }
 }
+
+
 
 async function sendMessage(messages, phone_number_id, from) {
   from = decrypt(from);
