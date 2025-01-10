@@ -55,9 +55,6 @@ app.post('/webhook', async (req, res) => {
   // Parse the request body from the POST
   let body = req.body
 
-  // Sandro: Log the request body
-  // console.log('Request Body:', body);
-
   // Check the Incoming webhook message
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
 
@@ -66,24 +63,24 @@ app.post('/webhook', async (req, res) => {
       req.body?.entry[0]?.changes[0]?.value?.messages?.length || null
     if (isNotInteractive) {
       let phone_number_id =
-        req.body.entry[0].changes[0].value.metadata.phone_number_id
-      user_id = req.body.entry[0].changes[0].value.messages[0].from // extract the phone number from the webhook payload
+        req.body?.entry[0]?.changes[0]?.value?.metadata?.phone_number_id
+      user_id = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.from // extract the phone number from the webhook payload
       user_id = encrypt(user_id);
       let user_name =
-        req.body.entry[0].changes[0].value.contacts[0].profile.name
+        req.body?.entry[0]?.changes[0]?.value?.contacts[0]?.profile?.name
       user_name = encrypt(user_name);
-      if (req.body.entry[0].changes[0].value.messages[0].text) {
-        if(req.body.entry[0].changes[0].value.messages[0].text.body.startsWith("/restart")){
+      if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text) {
+        if(req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body?.startsWith("/restart")){
           deleteUserState(user_id);
           return res.status(200).json({ message: 'ok, we start again' });
         }
-        const textBody = req.body.entry[0].changes[0].value.messages[0].text.body;
-        console.log('Text Input, body:', textBody);
+        const textBody = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body;
+        console.log('Text Input, body:', textBody); // delete in production
         await interact_text(
           user_id,
           {
             type: 'text',
-            payload: req.body.entry[0].changes[0].value.messages[0].text.body,
+            payload: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body,
           },
           phone_number_id,
           user_name
@@ -96,7 +93,7 @@ app.post('/webhook', async (req, res) => {
         ) {
           let mediaURL = await axios({
             method: 'GET',
-            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${req.body.entry[0].changes[0].value.messages[0].audio.id}`,
+            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${req.body?.entry[0]?.changes[0]?.value?.messages[0]?.audio?.id}`,
             headers: {
               'Content-Type': 'application/json',
               Authorization: 'Bearer ' + WHATSAPP_TOKEN,
@@ -139,28 +136,28 @@ app.post('/webhook', async (req, res) => {
           })
         }
       } else {
-        if (req.body.entry[0].changes[0].value.messages[0].type === "button"
+        if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.type === "button"
         )
         {
-          const buttonPayload = req.body.entry[0].changes[0].value.messages[0].button.payload;
+          const buttonPayload = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.button?.payload;
           console.log('Button Input, body:', buttonPayload);
           await interact(
             user_id,
             {
               type: 'text',
-              payload: req.body.entry[0].changes[0].value.messages[0].button.payload,
+              payload: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.button?.payload,
             },
             phone_number_id,
             user_name
           )
         } else if (
-          req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(
+          req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.id?.includes(
             'path-'
           )
         )
         {
-          const interactiveButtonId = req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id;
-          const interactiveButtonTitle = req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.title;
+          const interactiveButtonId = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.id;
+          const interactiveButtonTitle = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.title;
           console.log('Interactive Button Input, body:', {
             id: interactiveButtonId,
             title: interactiveButtonTitle,
@@ -168,12 +165,10 @@ app.post('/webhook', async (req, res) => {
           await interact(
             user_id,
             {
-              type: req.body.entry[0].changes[0].value.messages[0].interactive
-                .button_reply.id,
+              type: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.id,
               payload: {
                 label:
-                  req.body.entry[0].changes[0].value.messages[0].interactive
-                    .button_reply.title,
+                  req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.title,
               },
             },
             phone_number_id,
@@ -186,11 +181,9 @@ app.post('/webhook', async (req, res) => {
                 type: 'intent',
                 payload: {
                   query:
-                    req.body.entry[0].changes[0].value.messages[0].interactive
-                      .button_reply.title,
+                    req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.title,
                   intent: {
-                    name: req.body.entry[0].changes[0].value.messages[0]
-                      .interactive.button_reply.id,
+                    name: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.interactive?.button_reply?.id,
                   },
                   entities: [],
                 },
@@ -201,10 +194,12 @@ app.post('/webhook', async (req, res) => {
         }
       }
     }
-    res.status(200).json({ message: 'ok' })
+    res.status(200).json({ message: 'ok' });
+    console.log('Status 200: Interact Message ok');
   } else {
     // Return a '404 Not Found' if event is not from a WhatsApp API
     res.status(400).json({ message: 'error | unexpected body' })
+    console.log('Status 400: Interact Message error, unexpected body');
   }
 })
 
@@ -282,21 +277,7 @@ async function interact(user_id, request, phone_number_id, user_name) {
   // // Sandro um "last_conversation"
   const rightNow = new Date();
   const formattedDate = rightNow.toISOString();
-  // first, check if user entry is existing
   try {
-    // const responseTracker = await axios({
-    //   method: 'POST',
-    //   url: `${AYO_TRACKER_URL}/v2`,
-    //   headers: {
-    //     'accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   data: {
-    //     user_id: user_id,
-    //   }
-    // });
-    // console.log('responseTracker status:', responseTracker.status)
-    // if (responseTracker.data.message !== "no user entry") {
       await axios({
         method: 'POST',
         url: `${AYO_TRACKER_URL}/v1`,
@@ -311,9 +292,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
           query_value: formattedDate,
         },
       });
-    // } else {
-    //   console.log('No user entry found, no action needed.');
-    // }
   } catch (error) {
     console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
   }
