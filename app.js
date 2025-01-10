@@ -315,7 +315,6 @@ async function interact(user_id, request, phone_number_id, user_name) {
   } catch (error) {
     console.error('Error during last_conversation POST request:', error.response ? error.response.data : error.message);
   }
-  console.log('Continuing with the rest of the code...');
 
   // new code from Sandro (wieder einblenden)
   let response = await axios({
