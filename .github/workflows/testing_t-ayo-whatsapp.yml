@@ -8,6 +8,20 @@ on:
     branches:
       - testing
   workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'information'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 
 jobs:
   build:
