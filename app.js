@@ -858,7 +858,7 @@ async function sendMessage(messages, phone_number_id, from) {
     }
     if (!ignore) {
       try {
-        await axios({
+        const response = await axios({
           method: 'POST',
           url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
           data: data,
@@ -867,6 +867,8 @@ async function sendMessage(messages, phone_number_id, from) {
             Authorization: 'Bearer ' + WHATSAPP_TOKEN,
           },
         })
+        console.log('Message sent successfully: Type=${messages[j].type}')
+        console.log('Response:', response.data)
 
         if (messages[j].type === 'image') {
           try {
