@@ -77,6 +77,8 @@ app.post('/webhook', async (req, res) => {
           deleteUserState(user_id);
           return res.status(200).json({ message: 'ok, we start again' });
         }
+        const textBody = req.body.entry[0].changes[0].value.messages[0].text.body;
+        console.log('Text Input, body:', textBody);
         await interact(
           user_id,
           {
@@ -138,7 +140,10 @@ app.post('/webhook', async (req, res) => {
         }
       } else {
         if (req.body.entry[0].changes[0].value.messages[0].type === "button"
-        ) {
+        )
+        {
+          const buttonPayload = req.body.entry[0].changes[0].value.messages[0].button.payload;
+          console.log('Button Input, body:', buttonPayload);
           await interact(
             user_id,
             {
@@ -152,7 +157,14 @@ app.post('/webhook', async (req, res) => {
           req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id.includes(
             'path-'
           )
-        ) {
+        )
+        {
+          const interactiveButtonId = req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.id;
+          const interactiveButtonTitle = req.body.entry[0].changes[0].value.messages[0].interactive.button_reply.title;
+          console.log('Interactive Button Input, body:', {
+            id: interactiveButtonId,
+            title: interactiveButtonTitle,
+          });
           await interact(
             user_id,
             {
