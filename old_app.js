@@ -14,10 +14,6 @@ const fs = require('fs')
 
 const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
 
-//new whatsapp rate limiter
-const WhatsAppRateLimiter = require('./WhatsAppRateLimiter'); // Import your class
-const rateLimiter = new WhatsAppRateLimiter();
-
 const {
   Leopard,
   LeopardActivationLimitReached,
@@ -74,37 +70,21 @@ app.post('/webhook', async (req, res) => {
         req.body?.entry[0]?.changes[0]?.value?.contacts[0]?.profile?.name
       user_name = encrypt(user_name);
       if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text) {
-        // if(req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body?.startsWith("/restart")){
-        //   deleteUserState(user_id);
-        //   return res.status(200).json({ message: 'ok, we start again' });
-        // }
+        if(req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body?.startsWith("/restart")){
+          deleteUserState(user_id);
+          return res.status(200).json({ message: 'ok, we start again' });
+        }
         const textBody = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body;
         console.log('Text Input, body:', textBody); // delete in production
-        await rateLimiter.receiveMessageDelay(user_id, async () => {
-            if (textBody.startsWith("/restart")) {
-              deleteUserState(user_id);
-              return res.status(200).json({ message: "ok, we start again" });
-            }
-
-            console.log("Processing text message:", textBody);
-            await interact_text(
-              user_id,
-              { type: "text", payload: textBody },
-              phone_number_id,
-              user_name
-            );
-          });
-
-        // Old code from Voiceflow
-        // await interact_text(
-        //   user_id,
-        //   {
-        //     type: 'text',
-        //     payload: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body,
-        //   },
-        //   phone_number_id,
-        //   user_name
-        // )
+        await interact_text(
+          user_id,
+          {
+            type: 'text',
+            payload: req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body,
+          },
+          phone_number_id,
+          user_name
+        )
       } else if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.audio) {
         if (
           req.body?.entry[0]?.changes[0]?.value?.messages[0]?.audio?.voice ==
@@ -814,32 +794,55 @@ async function interact_text(user_id, request, phone_number_id, user_name) {
   }
 }
 
-//New with message delay
+
+
 async function sendMessage(messages, phone_number_id, from) {
   from = decrypt(from);
-
+  const timeoutPerKB = 10 // Adjust as needed, 10 milliseconds per kilobyte
   for (let j = 0; j < messages.length; j++) {
-    let data;
-    let ignore = null;
-
-    // Prepare the message payload (existing logic remains the same)
-    if (messages[j].type === 'image') {
+    let data
+    let ignore = null
+    // Image
+    if (messages[j].type == 'image') {
       data = {
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
         to: from,
         type: 'image',
-        image: { link: messages[j].value },
-      };
-    } else if (messages[j].type === 'audio') {
+        image: {
+          link: messages[j].value,
+        },
+      }
+      // Audio
+    } else if (messages[j].type == 'audio') {
       data = {
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
         to: from,
         type: 'audio',
-        audio: { link: messages[j].value },
-      };
-    } else if (messages[j].type === 'text') {
+        audio: {
+          link: messages[j].value,
+        },
+      }
+      // Buttons
+    } else if (messages[j].type == 'buttons') {
+      data = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: from,
+        type: 'interactive',
+        interactive: {
+          type: 'button',
+          body: {
+            text: messages[j - 1]?.value || 'Make your choice',
+          },
+          action: {
+            buttons: messages[j].buttons,
+          },
+        },
+      }
+      // Text
+    } else if (messages[j].type == 'text') {
       data = {
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
@@ -849,131 +852,45 @@ async function sendMessage(messages, phone_number_id, from) {
           preview_url: true,
           body: messages[j].value,
         },
-      };
+      }
     } else {
-      ignore = true;
+      ignore = true
     }
-
     if (!ignore) {
       try {
-        // Use the rate limiter's `sendMessageDelay` function
-        await rateLimiter.sendMessageDelay(from, messages[j].value, async () => {
-          await axios({
-            method: 'POST',
-            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-            data: data,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + WHATSAPP_TOKEN,
-            },
-          });
-        });
-        console.log('Message sent successfully: Type=', messages[j].type);
+        const response = await axios({
+          method: 'POST',
+          url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+          data: data,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+          },
+        })
+        console.log('Message sent successfully: Type=${messages[j].type}')
+        console.log('Response:', response.data)
+
+        if (messages[j].type === 'image') {
+          try {
+            const response = await axios.head(messages[j].value)
+
+            if (response.headers['content-length']) {
+              const imageSizeKB =
+                parseInt(response.headers['content-length']) / 1024
+              const timeout = imageSizeKB * timeoutPerKB
+              await new Promise((resolve) => setTimeout(resolve, timeout))
+            }
+          } catch (error) {
+            console.error('Failed to fetch image size:', error)
+            await new Promise((resolve) => setTimeout(resolve, 5000))
+          }
+        }
       } catch (err) {
-        console.error('Failed to send message:', err);
+        console.log(err)
       }
     }
   }
 }
-
-
-
-// //Old from Voiceflow
-// async function sendMessage(messages, phone_number_id, from) {
-//   from = decrypt(from);
-//   const timeoutPerKB = 10 // Adjust as needed, 10 milliseconds per kilobyte
-//   for (let j = 0; j < messages.length; j++) {
-//     let data
-//     let ignore = null
-//     // Image
-//     if (messages[j].type == 'image') {
-//       data = {
-//         messaging_product: 'whatsapp',
-//         recipient_type: 'individual',
-//         to: from,
-//         type: 'image',
-//         image: {
-//           link: messages[j].value,
-//         },
-//       }
-//       // Audio
-//     } else if (messages[j].type == 'audio') {
-//       data = {
-//         messaging_product: 'whatsapp',
-//         recipient_type: 'individual',
-//         to: from,
-//         type: 'audio',
-//         audio: {
-//           link: messages[j].value,
-//         },
-//       }
-//       // Buttons
-//     } else if (messages[j].type == 'buttons') {
-//       data = {
-//         messaging_product: 'whatsapp',
-//         recipient_type: 'individual',
-//         to: from,
-//         type: 'interactive',
-//         interactive: {
-//           type: 'button',
-//           body: {
-//             text: messages[j - 1]?.value || 'Make your choice',
-//           },
-//           action: {
-//             buttons: messages[j].buttons,
-//           },
-//         },
-//       }
-//       // Text
-//     } else if (messages[j].type == 'text') {
-//       data = {
-//         messaging_product: 'whatsapp',
-//         recipient_type: 'individual',
-//         to: from,
-//         type: 'text',
-//         text: {
-//           preview_url: true,
-//           body: messages[j].value,
-//         },
-//       }
-//     } else {
-//       ignore = true
-//     }
-//     if (!ignore) {
-//       try {
-//         const response = await axios({
-//           method: 'POST',
-//           url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-//           data: data,
-//           headers: {
-//             'Content-Type': 'application/json',
-//             Authorization: 'Bearer ' + WHATSAPP_TOKEN,
-//           },
-//         })
-//         console.log('Message sent successfully: Type=${messages[j].type}')
-//         console.log('Response:', response.data)
-//
-//         if (messages[j].type === 'image') {
-//           try {
-//             const response = await axios.head(messages[j].value)
-//
-//             if (response.headers['content-length']) {
-//               const imageSizeKB =
-//                 parseInt(response.headers['content-length']) / 1024
-//               const timeout = imageSizeKB * timeoutPerKB
-//               await new Promise((resolve) => setTimeout(resolve, timeout))
-//             }
-//           } catch (error) {
-//             console.error('Failed to fetch image size:', error)
-//             await new Promise((resolve) => setTimeout(resolve, 5000))
-//           }
-//         }
-//       } catch (err) {
-//         console.log(err)
-//       }
-//     }
-//   }
-// }
 
 async function sendNoReply(user_id, request, phone_number_id, user_name) {
   clearTimeout(noreplyTimeout)
@@ -1143,7 +1060,7 @@ app.post('/template/scheduler', async (req, res) => {
                 "text": reminder_text
               }
             ]
-          },
+          }, 
           {
             "type": "button",
             "sub_type": "quick_reply",
@@ -1175,14 +1092,14 @@ app.post('/template/scheduler', async (req, res) => {
       method: 'post',
       maxBodyLength: Infinity,
       url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-      headers: {
+      headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
       },
       data: data
     };
 
-
+   
     const response = await axios(config);
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
@@ -1231,20 +1148,20 @@ app.post('/template/appointscheduler', async (req, res) => {
         ]
       }
     });
-
+  
     // Logging the request data
     // console.log('Sending WhatsApp message with data:', data);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
       url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-      headers: {
+      headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
       },
       data: data
     };
-
+   
     const response = await axios(config);
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
@@ -1322,20 +1239,20 @@ app.post('/template/module', async (req, res) => {
         ]
       }
     });
-
+  
     // Logging the request data
     // console.log('Sending WhatsApp message with data:', data);
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
       url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-      headers: {
+      headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + WHATSAPP_TOKEN,
       },
       data: data
     };
-
+   
     const response = await axios(config);
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
