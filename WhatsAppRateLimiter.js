@@ -24,26 +24,36 @@ class WhatsAppRateLimiter {
             await this.sleep(waitTime);
         }
 
-        try {
-            // Attempt to send the message
-            await sendFunction(phoneNumber, message);
-            console.log(`Message sent to ${phoneNumber}: "${message}"`);
-            this.lastSentTimes.set(phoneNumber, Date.now());
-            this.backoffDelays.delete(phoneNumber); // Reset backoff on success
-        } catch (error) {
-            if (error.code === 131056) {
-                console.log(`Rate limit error for ${phoneNumber}, entering backoff`);
-                const nextBackoff = this.calculateBackoffDelay(phoneNumber);
-                this.backoffDelays.set(phoneNumber, nextBackoff);
+     try {
+        // Attempt to send the message
+        await sendFunction(phoneNumber, message);
+        console.log(`Message sent to ${phoneNumber}: "${message}"`);
+        this.lastSentTimes.set(phoneNumber, Date.now());
+        this.backoffDelays.delete(phoneNumber); // Reset backoff on success
+    } catch (error) {
+        if (error.response && error.response.data.error.message.includes('(Pair rate limit hit')) {
+            console.log(`Rate limit error for ${phoneNumber}, entering backoff`);
+            const nextBackoff = this.calculateBackoffDelay(phoneNumber);
+            this.backoffDelays.set(phoneNumber, nextBackoff);
 
-                // Retry with modified message after backoff
-                const modifiedMessage = `Sorry, I had to think longer: ${message}`;
-                this.sendMessageDelay(phoneNumber, modifiedMessage, sendFunction);
-            } else {
-                console.error(`Failed to send message to ${phoneNumber}: ${error.message}`);
-            }
+            // Retry with modified message after backoff
+            const modifiedMessage = `Sorry, I had to think longer: ${message}`;
+            console.log(`Retrying after backoff with message: "${modifiedMessage}"`);
+            await this.sendMessageDelay(phoneNumber, modifiedMessage, sendFunction);
+        } else if (error.code === 131056) {
+            console.log(`Legacy rate limit error for ${phoneNumber}, entering backoff`);
+            const nextBackoff = this.calculateBackoffDelay(phoneNumber);
+            this.backoffDelays.set(phoneNumber, nextBackoff);
+
+            // Retry with modified message after backoff
+            const modifiedMessage = `Sorry, I had to think longer: ${message}`;
+            console.log(`Retrying after backoff with message: "${modifiedMessage}"`);
+            await this.sendMessageDelay(phoneNumber, modifiedMessage, sendFunction);
+        } else {
+            console.error(`Failed to send message to ${phoneNumber}: ${error.message}`);
         }
     }
+}
 
     /**
      * Handles incoming messages with a delay to avoid responding during active delays.
