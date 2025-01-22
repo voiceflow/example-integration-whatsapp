@@ -858,7 +858,7 @@ async function sendMessage(messages, phone_number_id, from) {
       try {
         // Use the rate limiter's `sendMessageDelay` function
         await rateLimiter.sendMessageDelay(from, messages[j].value, async () => {
-          await axios({
+          return axios({
             method: 'POST',
             url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
             data: data,

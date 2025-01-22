@@ -13,18 +13,18 @@ class WhatsAppRateLimiter {
      * @param {function} sendFunction - A function that actually sends the message (e.g., API call).
      */
     async sendMessageDelay(phoneNumber, message, sendFunction) {
-        const now = Date.now();
-        const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
-        const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
+    const now = Date.now();
+    const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
+    const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
 
-        // If within backoff delay, wait before sending
-        const waitTime = Math.max(this.defaultDelay, backoffDelay) - (now - lastSentTime);
-        if (waitTime > 0) {
-            console.log(`Waiting ${waitTime}ms before sending to ${phoneNumber}`);
-            await this.sleep(waitTime);
-        }
+    // Calculate wait time if within backoff delay
+    const waitTime = Math.max(this.defaultDelay, backoffDelay) - (now - lastSentTime);
+    if (waitTime > 0) {
+        console.log(`Waiting ${waitTime}ms before sending to ${phoneNumber}`);
+        await this.sleep(waitTime);
+    }
 
-        try {
+    try {
         // Attempt to send the message
         await sendFunction(phoneNumber, message);
         console.log(`Message sent to ${phoneNumber}: "${message}"`);
@@ -32,19 +32,29 @@ class WhatsAppRateLimiter {
         this.backoffDelays.delete(phoneNumber); // Reset backoff on success
     } catch (error) {
         if (error.response && error.response.status === 400) {
-            console.log(`HTTP 400 error for ${phoneNumber}, entering backoff`);
-            const nextBackoff = this.calculateBackoffDelay(phoneNumber);
-            this.backoffDelays.set(phoneNumber, nextBackoff);
+            const errorData = error.response.data.error;
 
-            // Retry with modified message after backoff
-            const modifiedMessage = `Sorry, I had to think longer: ${message}`;
-            console.log(`Retrying after backoff with message: "${modifiedMessage}"`);
-            await this.sendMessageDelay(phoneNumber, modifiedMessage, sendFunction);
+            // Check for specific rate-limiting error code
+            if (errorData && errorData.code === 131056) {
+                console.log(`Rate limit error for ${phoneNumber}: ${errorData.message}`);
+                console.log(`Details: ${errorData.error_data.details}`);
+
+                const nextBackoff = this.calculateBackoffDelay(phoneNumber);
+                this.backoffDelays.set(phoneNumber, nextBackoff);
+
+                // Retry with modified message after backoff
+                const modifiedMessage = `Sorry, I had to think longer: ${message}`;
+                console.log(`Retrying after backoff with message: "${modifiedMessage}"`);
+                await this.sendMessageDelay(phoneNumber, modifiedMessage, sendFunction);
+            } else {
+                console.error(`Unhandled HTTP 400 error for ${phoneNumber}: ${errorData?.message || 'Unknown error'}`);
+            }
         } else {
             console.error(`Failed to send message to ${phoneNumber}: ${error.message}`);
         }
     }
 }
+
 
     /**
      * Handles incoming messages with a delay to avoid responding during active delays.
