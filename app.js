@@ -10,13 +10,16 @@ const VF_PROJECT_ID = process.env.VF_PROJECT_ID || null
 const NLU_PROTECTION_URL = process.env.NLU_PROTECTION_URL || null
 const AYO_TRACKER_URL = process.env.AYO_TRACKER_URL || null
 
+const DEFAULT_DELAY = process.env.DEFAULT_DELAY || null
+
 const fs = require('fs')
 
 const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
 
 //new whatsapp rate limiter
 const WhatsAppRateLimiter = require('./WhatsAppRateLimiter'); // Import your class
-const rateLimiter = new WhatsAppRateLimiter();
+const rateLimiter = new WhatsAppRateLimiter(DEFAULT_DELAY);
+
 
 const {
   Leopard,

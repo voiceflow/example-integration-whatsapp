@@ -1,8 +1,8 @@
 class WhatsAppRateLimiter {
-    constructor() {
+    constructor(defaultDelay) {
         this.lastSentTimes = new Map(); // Tracks the last sent time for each phone number
         this.backoffDelays = new Map(); // Tracks the current backoff delay for each phone number
-        this.defaultDelay = 2000; // 2 seconds in milliseconds
+        this.defaultDelay = defaultDelay; // seconds in milliseconds
         this.maxBackoffDelay = 60000; // Maximum backoff delay (e.g., 60 seconds)
     }
 
