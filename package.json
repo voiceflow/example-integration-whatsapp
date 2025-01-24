@@ -4,7 +4,7 @@
   "description": "WhatsApp Webhook for Voiceflow DM API",
   "main": "app.js",
   "scripts": {
-    "start": "npm install && node old_app.js"
+    "start": "npm install && node app.js"
   },
   "author": "Voiceflow | NiKo",
   "license": "ISC",
