@@ -2,7 +2,7 @@
   "name": "example-whatsapp-voiceflow-integration",
   "version": "1.1.4",
   "description": "WhatsApp Webhook for Voiceflow DM API",
-  "main": "old_app.js",
+  "main": "app.js",
   "scripts": {
     "start": "npm install && node old_app.js"
   },
