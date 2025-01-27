@@ -823,8 +823,6 @@ async function sendMessage(messages, from) {
   //from = decrypt(from);
 
   try {
-        await sleep(1000)
-      // Use the rate limiter's `sendMessageDelay` function
         await rateLimiter.sendMessageDelay(from, messages);
         console.log('Message sent successfully: Type=', messages.type);
       } catch (err) {
