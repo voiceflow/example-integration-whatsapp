@@ -822,6 +822,7 @@ async function interact_text(user_id, request, phone_number_id, user_name) {
 
 async function sendMessage(messages, phone_number_id, from) {
   from = decrypt(from);
+  console.log('Messages', messages)
   try {
         await rateLimiter.sendMessageDelay(from, phone_number_id, messages);
       } catch (err) {

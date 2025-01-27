@@ -29,7 +29,9 @@ class WhatsAppRateLimiter {
             }
 
             const {data, ignore} = this.createMessageData(messages[j], phoneNumber);
-
+            console.log('data:', data);
+            console.log('phoneNumber:', phoneNumber);
+            console.log('phoneNumberID:', phoneNumberID);
             if (!ignore) {
                 try {
                     // Attempt to send the message
@@ -88,8 +90,8 @@ class WhatsAppRateLimiter {
               Authorization: 'Bearer ' + this.whatsappToken,
         },
       });
-      logger.info(`Message sent to ${phoneNumberID}, with "${data}" to ${this.whatsappVersion} and phoneNumberID ${$phoneNumberID}`);
-      logger.info('Authorization: Bearer ' + this.whatsappToken);
+      console.log(`Message sent to ${phoneNumberID}, with "${data}" to ${this.whatsappVersion} and phoneNumberID ${$phoneNumberID}`);
+      console.log('Authorization: Bearer ' + this.whatsappToken);
       return response.data;
     } catch (error) {
       throw error;
