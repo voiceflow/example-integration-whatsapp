@@ -1,10 +1,13 @@
 const {default: axios} = require("axios");
 
 class WhatsAppRateLimiter {
-    constructor(defaultDelay) {
+    constructor(defaultDelay, whatsappVersion, phoneNumberId, whatsappToken) {
         this.lastSentTimes = new Map(); // Tracks the last sent time for each phone number
         this.backoffDelays = new Map(); // Tracks the current backoff delay for each phone number
         this.defaultDelay = defaultDelay; // seconds in milliseconds
+        this.whatsappVersion = whatsappVersion;
+        this.phoneNumberId = phoneNumberId;
+        this.whatsappToken = whatsappToken;
         this.maxBackoffDelay = 60000; // Maximum backoff delay (e.g., 60 seconds)
     }
 
@@ -81,11 +84,11 @@ class WhatsAppRateLimiter {
     try {
       const response = await axios({
         method: 'POST',
-            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${PHONE_NUMBER_ID}/messages`,
+            url: `https://graph.facebook.com/${this.whatsappVersion}/${this.phoneNumberId}/messages`,
             data: data,
             headers: {
               'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+              Authorization: 'Bearer ' + this.whatsappToken,
         },
       });
       return response.data;

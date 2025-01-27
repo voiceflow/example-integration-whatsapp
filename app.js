@@ -2,6 +2,7 @@
 require('dotenv').config()
 const WHATSAPP_VERSION = process.env.WHATSAPP_VERSION || 'v17.0'
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
 
 const VF_API_KEY = process.env.VF_API_KEY
 const VF_VERSION_ID = process.env.VF_VERSION_ID || 'development'
@@ -18,7 +19,7 @@ const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
 
 //new whatsapp rate limiter
 const WhatsAppRateLimiter = require('./WhatsAppRateLimiter'); // Import your class
-const rateLimiter = new WhatsAppRateLimiter(DEFAULT_DELAY);
+const rateLimiter = new WhatsAppRateLimiter(DEFAULT_DELAY, WHATSAPP_VERSION, PHONE_NUMBER_ID, WHATSAPP_TOKEN); // Create an instance of your class
 
 
 const {
