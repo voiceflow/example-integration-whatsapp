@@ -29,9 +29,6 @@ class WhatsAppRateLimiter {
             }
 
             const {data, ignore} = this.createMessageData(messages[j], phoneNumber);
-            console.log('data:', data);
-            console.log('phoneNumber:', phoneNumber);
-            console.log('phoneNumberID:', phoneNumberID);
             if (!ignore) {
                 try {
                     // Attempt to send the message
@@ -80,8 +77,6 @@ class WhatsAppRateLimiter {
     }
 
     async makeHttpRequest(phoneNumberID, data) {
-        console.log(`WhatsappVersion: ${process.env.WHATSAPP_VERSION}`);
-        console.log(`Bearer ${process.env.WHATSAPP_TOKEN}`);
         try {
             const response = await axios({
                 method: 'POST',
