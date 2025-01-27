@@ -106,3 +106,8 @@ dist
 # TernJS port file
 .tern-port
 .DS_Store
+
+# Files
+test_app.js
+WhatsAppRateLimiter_old.js
+old_app.js

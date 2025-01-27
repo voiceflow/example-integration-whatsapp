@@ -818,66 +818,82 @@ async function interact_text(user_id, request, phone_number_id, user_name) {
 }
 
 //New with message delay
-async function sendMessage(messages, phone_number_id, from) {
-  from = decrypt(from);
 
-  for (let j = 0; j < messages.length; j++) {
-    let data;
-    let ignore = null;
+async function sendMessage(messages, from) {
+  //from = decrypt(from);
 
-    // Prepare the message payload (existing logic remains the same)
-    if (messages[j].type === 'image') {
-      data = {
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: from,
-        type: 'image',
-        image: { link: messages[j].value },
-      };
-    } else if (messages[j].type === 'audio') {
-      data = {
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: from,
-        type: 'audio',
-        audio: { link: messages[j].value },
-      };
-    } else if (messages[j].type === 'text') {
-      data = {
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: from,
-        type: 'text',
-        text: {
-          preview_url: true,
-          body: messages[j].value,
-        },
-      };
-    } else {
-      ignore = true;
-    }
-
-    if (!ignore) {
-      try {
-        // Use the rate limiter's `sendMessageDelay` function
-        await rateLimiter.sendMessageDelay(from, messages[j].value, async () => {
-          return axios({
-            method: 'POST',
-            url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
-            data: data,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + WHATSAPP_TOKEN,
-            },
-          });
-        });
-        console.log('Message sent successfully: Type=', messages[j].type);
+  try {
+        await sleep(1000)
+      // Use the rate limiter's `sendMessageDelay` function
+        await rateLimiter.sendMessageDelay(from, messages);
+        console.log('Message sent successfully: Type=', messages.type);
       } catch (err) {
         console.error('Failed to send message:', err);
       }
     }
-  }
-}
+
+
+
+// async function sendMessage(messages, phone_number_id, from) {
+//   from = decrypt(from);
+//
+//   for (let j = 0; j < messages.length; j++) {
+//     let data;
+//     let ignore = null;
+//
+//     // Prepare the message payload (existing logic remains the same)
+//     if (messages[j].type === 'image') {
+//       data = {
+//         messaging_product: 'whatsapp',
+//         recipient_type: 'individual',
+//         to: from,
+//         type: 'image',
+//         image: { link: messages[j].value },
+//       };
+//     } else if (messages[j].type === 'audio') {
+//       data = {
+//         messaging_product: 'whatsapp',
+//         recipient_type: 'individual',
+//         to: from,
+//         type: 'audio',
+//         audio: { link: messages[j].value },
+//       };
+//     } else if (messages[j].type === 'text') {
+//       data = {
+//         messaging_product: 'whatsapp',
+//         recipient_type: 'individual',
+//         to: from,
+//         type: 'text',
+//         text: {
+//           preview_url: true,
+//           body: messages[j].value,
+//         },
+//       };
+//     } else {
+//       ignore = true;
+//     }
+//
+//     if (!ignore) {
+//       try {
+//         // Use the rate limiter's `sendMessageDelay` function
+//         await rateLimiter.sendMessageDelay(from, messages[j].value, async () => {
+//           return axios({
+//             method: 'POST',
+//             url: `https://graph.facebook.com/${WHATSAPP_VERSION}/${phone_number_id}/messages`,
+//             data: data,
+//             headers: {
+//               'Content-Type': 'application/json',
+//               Authorization: 'Bearer ' + WHATSAPP_TOKEN,
+//             },
+//           });
+//         });
+//         console.log('Message sent successfully: Type=', messages[j].type);
+//       } catch (err) {
+//         console.error('Failed to send message:', err);
+//       }
+//     }
+//   }
+// }
 
 
 
