@@ -1,7 +1,7 @@
 const {default: axios} = require("axios");
 
 class WhatsAppRateLimiter {
-    constructor(defaultDelay, whatsappVersion, whatsappToken) {
+    constructor(defaultDelay) {
         this.lastSentTimes = new Map(); // Tracks the last sent time for each phone number
         this.backoffDelays = new Map(); // Tracks the current backoff delay for each phone number
         this.defaultDelay = defaultDelay; // seconds in milliseconds
@@ -80,18 +80,18 @@ class WhatsAppRateLimiter {
     }
 
     async makeHttpRequest(phoneNumberID, data) {
-    try {
-      const response = await axios({
-        method: 'POST',
-            url: `https://graph.facebook.com/${this.whatsappVersion}/${phoneNumberID}/messages`,
-            data: data,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + this.whatsappToken,
-        },
-      });
-      console.log(`Message sent to ${phoneNumberID}, with "${data}" to ${this.whatsappVersion} and phoneNumberID ${$phoneNumberID}`);
-      console.log('Authorization: Bearer ' + this.whatsappToken);
+        console.log(`WhatsappVersion: ${process.env.WHATSAPP_VERSION}`);
+        console.log(`Bearer ${process.env.WHATSAPP_TOKEN}`);
+        try {
+            const response = await axios({
+                method: 'POST',
+                    url: `https://graph.facebook.com/${process.env.WHATSAPP_VERSION}/${phoneNumberID}/messages`,
+                    data: data,
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+                },
+              });
       return response.data;
     } catch (error) {
       throw error;

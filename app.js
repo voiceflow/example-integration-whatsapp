@@ -19,7 +19,7 @@ const PICOVOICE_API_KEY = process.env.PICOVOICE_API_KEY || null
 
 //new whatsapp rate limiter
 const WhatsAppRateLimiter = require('./WhatsAppRateLimiter'); // Import your class
-const rateLimiter = new WhatsAppRateLimiter(DEFAULT_DELAY, WHATSAPP_VERSION, PHONE_NUMBER_ID, WHATSAPP_TOKEN); // Create an instance of your class
+const rateLimiter = new WhatsAppRateLimiter(DEFAULT_DELAY); // Create an instance of your class
 
 
 const {
