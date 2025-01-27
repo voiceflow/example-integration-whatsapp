@@ -1,12 +1,11 @@
 const {default: axios} = require("axios");
 
 class WhatsAppRateLimiter {
-    constructor(defaultDelay, whatsappVersion, phoneNumberId, whatsappToken) {
+    constructor(defaultDelay, whatsappVersion, whatsappToken) {
         this.lastSentTimes = new Map(); // Tracks the last sent time for each phone number
         this.backoffDelays = new Map(); // Tracks the current backoff delay for each phone number
         this.defaultDelay = defaultDelay; // seconds in milliseconds
         this.whatsappVersion = whatsappVersion;
-        this.phoneNumberId = phoneNumberId;
         this.whatsappToken = whatsappToken;
         this.maxBackoffDelay = 60000; // Maximum backoff delay (e.g., 60 seconds)
     }
@@ -17,9 +16,9 @@ class WhatsAppRateLimiter {
      * @param {string} message - The message to send.
      * @param {function} sendFunction - A function that actually sends the message (e.g., API call).
      */
-    async sendMessageDelay(phoneNumber, messages) {
+    async sendMessageDelay(phoneNumber, phoneNumberID, messages) {
         for (let j = 0; j < messages.length; j++) {
-            const message = messages[j]
+            const message = messages[j].value
             const now = Date.now();
             const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
             const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
@@ -36,7 +35,7 @@ class WhatsAppRateLimiter {
             if (!ignore) {
                 try {
                     // Attempt to send the message
-                    await this.makeHttpRequest(data);
+                    await this.makeHttpRequest(phoneNumberID, data);
                     console.log(`Message sent to ${phoneNumber}: "${message}"`);
                     this.lastSentTimes.set(phoneNumber, Date.now());
                     this.backoffDelays.delete(phoneNumber); // Reset backoff on success
@@ -80,11 +79,11 @@ class WhatsAppRateLimiter {
         }
     }
 
-    async makeHttpRequest(data) {
+    async makeHttpRequest(phoneNumberID, data) {
     try {
       const response = await axios({
         method: 'POST',
-            url: `https://graph.facebook.com/${this.whatsappVersion}/${this.phoneNumberId}/messages`,
+            url: `https://graph.facebook.com/${this.whatsappVersion}/${phoneNumberID}/messages`,
             data: data,
             headers: {
               'Content-Type': 'application/json',
