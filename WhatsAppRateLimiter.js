@@ -5,8 +5,6 @@ class WhatsAppRateLimiter {
         this.lastSentTimes = new Map(); // Tracks the last sent time for each phone number
         this.backoffDelays = new Map(); // Tracks the current backoff delay for each phone number
         this.defaultDelay = defaultDelay; // seconds in milliseconds
-        this.whatsappVersion = whatsappVersion;
-        this.whatsappToken = whatsappToken;
         this.maxBackoffDelay = 60000; // Maximum backoff delay (e.g., 60 seconds)
     }
 
@@ -90,6 +88,8 @@ class WhatsAppRateLimiter {
               Authorization: 'Bearer ' + this.whatsappToken,
         },
       });
+      logger.info(`Message sent to ${phoneNumberID}, with "${data}" to ${this.whatsappVersion} and phoneNumberID ${$phoneNumberID}`);
+      logger.info('Authorization: Bearer ' + this.whatsappToken);
       return response.data;
     } catch (error) {
       throw error;
