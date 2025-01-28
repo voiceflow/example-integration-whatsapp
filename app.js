@@ -73,31 +73,30 @@ app.post('/webhook', async (req, res) => {
       let phone_number_id =
         req.body?.entry[0]?.changes[0]?.value?.metadata?.phone_number_id
       user_id = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.from // extract the phone number from the webhook payload
+
+      // check wheter delay is active or not
+      const delayActive = await rateLimiter.receiveMessageDelay(user_id);
+      if (delayActive) {
+        console.log(`Message from ${user_id} is delayed. Ignoring.`);
+        return res.status(200).json({ message: 'Message delayed, processing stopped.' });
+      }
+
       user_id = encrypt(user_id);
       let user_name =
         req.body?.entry[0]?.changes[0]?.value?.contacts[0]?.profile?.name
       user_name = encrypt(user_name);
       if (req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text) {
-        // if(req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body?.startsWith("/restart")){
-        //   deleteUserState(user_id);
-        //   return res.status(200).json({ message: 'ok, we start again' });
-        // }
+        if(req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body?.startsWith("/restart")){
+          deleteUserState(user_id);
+          return res.status(200).json({ message: 'ok, we start again' });
+        }
         const textBody = req.body?.entry[0]?.changes[0]?.value?.messages[0]?.text?.body;
-        console.log('Text Input, body:', textBody); // delete in production
-        await rateLimiter.receiveMessageDelay(user_id, async () => {
-            if (textBody.startsWith("/restart")) {
-              deleteUserState(user_id);
-              return res.status(200).json({ message: "ok, we start again" });
-            }
-
-            console.log("Processing text message:", textBody);
-            await interact_text(
+        await interact_text(
               user_id,
               { type: "text", payload: textBody },
               phone_number_id,
               user_name
-            );
-          });
+            )
 
         // Old code from Voiceflow
         // await interact_text(

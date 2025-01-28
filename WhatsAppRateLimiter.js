@@ -105,18 +105,17 @@ class WhatsAppRateLimiter {
      * @param {string} phoneNumber - The sender's phone number.
      * @param {function} processFunction - A function that processes the incoming message.
      */
-    async receiveMessageDelay(phoneNumber, processFunction) {
-        const now = Date.now();
-        const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
-        const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
+    async receiveMessageDelay(phoneNumber) {
+        const backoffDelay = this.backoffDelays.get(phoneNumber);
 
-        if (now - lastSentTime < Math.max(this.defaultDelay, backoffDelay)) {
-            console.log(`Ignoring incoming message from ${phoneNumber} due to active delay`);
-            return;
+        // Skip processing if an active backoff delay exists
+        if (backoffDelay) {
+            console.log(`Ignoring incoming message from ${phoneNumber.slice(-4)} due to active backoff delay`);
+            return true;
         }
 
-        // Process the incoming message
-        processFunction(phoneNumber);
+        return false
+        // Log processing of the message
     }
 
     /**
