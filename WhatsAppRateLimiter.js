@@ -178,7 +178,7 @@ class WhatsAppRateLimiter {
                     },
                 },
             };
-        } else if (message.type === 'text') {
+        } else if (message.type === 'text' || message.type === 'body') {
             data = {
                 messaging_product: 'whatsapp',
                 recipient_type: 'individual',
