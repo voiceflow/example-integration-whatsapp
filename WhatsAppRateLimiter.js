@@ -110,7 +110,7 @@ class WhatsAppRateLimiter {
 
         // Skip processing if an active backoff delay exists
         if (backoffDelay) {
-            console.log(`Ignoring incoming message from ${phoneNumber.slice(-4)} due to active backoff delay`);
+            console.log(`Ignoring incoming message from ********${phoneNumber.slice(-2)} due to active backoff delay`);
             return true;
         }
 

@@ -77,7 +77,6 @@ app.post('/webhook', async (req, res) => {
       // check wheter delay is active or not
       const delayActive = await rateLimiter.receiveMessageDelay(user_id);
       if (delayActive) {
-        console.log(`Message from ${user_id} is delayed. Ignoring.`);
         return res.status(200).json({ message: 'Message delayed, processing stopped.' });
       }
 
