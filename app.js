@@ -1125,6 +1125,7 @@ app.post('/intent', async (req, res) => {
     );
 
     res.status(200).end();
+    console.log(`Msg sent to ********${user_id.slice(-2)} with intent ${intent_name} using /intent`);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send('Internal Server Error');
@@ -1202,6 +1203,7 @@ app.post('/template/scheduler', async (req, res) => {
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
+    console.log(`Msg sent to ********${user_id_plain.slice(-2)} with reminder_text ${reminder_text} using /template/scheduler`);
   } catch (error) {
     // Detailed error logging
     console.error('Error occurred:', error.message);
@@ -1264,6 +1266,7 @@ app.post('/template/appointscheduler', async (req, res) => {
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
+    console.log(`Msg sent to ********${user_id_plain.slice(-2)} with appsched ${appointment_title} using /template/appointscheduler`);
   } catch (error) {
     // Detailed error logging
     console.error('Error occurred:', error.message);
@@ -1355,6 +1358,7 @@ app.post('/template/module', async (req, res) => {
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
+    console.log(`Msg sent to ********${user_id_plain.slice(-2)} with module ${module_title} using /template/module`);
   } catch (error) {
     // Detailed error logging
     console.error('Error occurred:', error.message);
@@ -1436,6 +1440,7 @@ app.post('/template/general', async (req, res) => {
     // Logging the response from the WhatsApp API
     // console.log('WhatsApp API response:', response.data);
     res.status(200).end();
+    console.log(`Msg sent to ********${user_id_plain.slice(-2)} with module ${general_content} using /template/general`);
   } catch (error) {
     // Detailed error logging
     console.error('Error occurred:', error.message);
