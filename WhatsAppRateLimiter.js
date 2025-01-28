@@ -14,31 +14,34 @@ class WhatsAppRateLimiter {
      * @param {string} message - The message to send.
      * @param {function} sendFunction - A function that actually sends the message (e.g., API call).
      */
-    async sendMessageDelay(phoneNumber, phoneNumberID, messages) {
-        for (let j = 0; j < messages.length; j++) {
-            const message = messages[j].value
+    async sendMessageDelay(phoneNumber, phoneNumberID, messages, startIndex = 0) {
+        const timeoutPerKB = 10; // Adjust as needed
+        let currentIndex = startIndex;
+        const anonymizedPhoneNumber = phoneNumber.replace(/\d(?=\d{2})/g, '*');
+        while (currentIndex < messages.length) {
+            const message = messages[currentIndex];
             const now = Date.now();
             const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
             const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
-            const timeoutPerKB = 10; // Adjust as needed
             // Calculate wait time if within backoff delay
             const waitTime = Math.max(this.defaultDelay, backoffDelay) - (now - lastSentTime);
             if (waitTime > 0) {
-                console.log(`Waiting ${waitTime}ms before sending to ${phoneNumber}`);
+                console.log(`Waiting ${waitTime}ms before sending next message`);
                 await this.sleep(waitTime);
             }
 
-            const {data, ignore} = this.createMessageData(messages[j], phoneNumber);
+            const {data, ignore} = this.createMessageData(message, phoneNumber);
             if (!ignore) {
                 try {
                     // Attempt to send the message
                     await this.makeHttpRequest(phoneNumberID, data);
-                    console.log(`Message sent to ${phoneNumber}: "${message}"`);
+                    console.log(`Message sent to ${anonymizedPhoneNumber} message type: "${message.type}"`);
                     this.lastSentTimes.set(phoneNumber, Date.now());
                     this.backoffDelays.delete(phoneNumber); // Reset backoff on success
-                    if (messages[j].type === 'image') {
+
+                    if (message.type === 'image') {
                         try {
-                            const response = await axios.head(messages[j].value)
+                            const response = await axios.head(message.value)
                             if (response.headers['content-length']) {
                                 const imageSizeKB =
                                     parseInt(response.headers['content-length']) / 1024
@@ -50,28 +53,32 @@ class WhatsAppRateLimiter {
                             await new Promise((resolve) => setTimeout(resolve, 5000))
                         }
                     }
+                    console.log(`Message sent to ${anonymizedPhoneNumber} with message: ${message.value}`);
+                    currentIndex++;
                 } catch (error) {
                     if (error.response && error.response.status === 400) {
                         const errorData = error.response.data.error;
 
                         // Check for specific rate-limiting error code
                         if (errorData && errorData.code === 131056) {
-                            console.log(`Rate limit error for ${phoneNumber}: ${errorData.message}`);
+                            console.log(`Rate limit error for ${anonymizedPhoneNumber}: ${errorData.message}`);
                             console.log(`Details: ${errorData.error_data.details}`);
 
                             const nextBackoff = this.calculateBackoffDelay(phoneNumber);
                             this.backoffDelays.set(phoneNumber, nextBackoff);
-
-                            console.log(`Retrying original message: "${messages.type}"`);
-                            await this.sendMessageDelay(phoneNumber, messages);
-
+                            console.log(`Retrying message at index ${currentIndex}: ${message.value}`);
+                            await this.sleep(nextBackoff);
+                            continue;
                         } else {
-                            console.error(`Unhandled HTTP 400 error for ${phoneNumber}: ${errorData?.message || 'Unknown error'}`);
+                            console.error(`Unhandled HTTP 400 error for ${anonymizedPhoneNumber}: ${errorData?.message || 'Unknown error'}`);
                         }
                     } else {
-                        console.error(`Failed to send message to ${phoneNumber}: ${error.message}`);
+                        console.error(`Failed to send message to ${anonymizedPhoneNumber}: ${error.message}`);
                     }
                 }
+            } else {
+                console.log(`Ignoring message with type: ${message.type}`);
+                currentIndex++;
             }
         }
     }
