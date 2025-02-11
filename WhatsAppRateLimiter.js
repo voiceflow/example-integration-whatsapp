@@ -170,7 +170,7 @@ class WhatsAppRateLimiter {
                 interactive: {
                     type: 'button',
                     body: {
-                        text: message.previousValue || '',
+                        text: message.previousValue || ' ',
                     },
                     action: {
                         buttons: message.buttons,
