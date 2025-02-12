@@ -32,7 +32,7 @@ class WhatsAppRateLimiter {
                 await this.sleep(waitTime);
             }
 
-            if (message.type === 'text' && nextMessage?.type === 'buttons') {
+            if ((message.type === 'text' || message.type === 'body') && nextMessage?.type === 'buttons') {
             console.log(`Skipping separate text message for: "${message.value}", it will be used in buttons.`);
             currentIndex++; // Move to the button message
             button_text = message.value; // Set button_text to the skipped text message
