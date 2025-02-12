@@ -19,8 +19,9 @@ class WhatsAppRateLimiter {
         let currentIndex = startIndex;
         const anonymizedPhoneNumber = phoneNumber.replace(/\d(?=\d{2})/g, '*');
         while (currentIndex < messages.length) {
-            const message = messages[currentIndex];
-            const message_1_text = messages[currentIndex - 1]?.value; // Get the previous message text
+            let message = messages[currentIndex];
+            let nextMessage = messages[currentIndex + 1];
+            let button_text = null;
             const now = Date.now();
             const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
             const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
@@ -31,7 +32,14 @@ class WhatsAppRateLimiter {
                 await this.sleep(waitTime);
             }
 
-            const {data, ignore} = this.createMessageData(message, phoneNumber, message_1_text);
+            if (message.type === 'text' && nextMessage?.type === 'buttons') {
+            console.log(`Skipping separate text message for: "${message.value}", it will be used in buttons.`);
+            currentIndex++; // Move to the button message
+            button_text = message.value; // Set button_text to the skipped text message
+            message = messages[currentIndex]; // Now update message to the button message
+            }
+
+            const {data, ignore} = this.createMessageData(message, phoneNumber, button_text);
             if (!ignore) {
                 try {
                     // Attempt to send the message
