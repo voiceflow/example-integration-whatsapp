@@ -20,6 +20,7 @@ class WhatsAppRateLimiter {
         const anonymizedPhoneNumber = phoneNumber.replace(/\d(?=\d{2})/g, '*');
         while (currentIndex < messages.length) {
             const message = messages[currentIndex];
+            const message_1_text = messages[currentIndex - 1]?.value; // Get the previous message text
             const now = Date.now();
             const lastSentTime = this.lastSentTimes.get(phoneNumber) || 0;
             const backoffDelay = this.backoffDelays.get(phoneNumber) || 0;
@@ -30,7 +31,7 @@ class WhatsAppRateLimiter {
                 await this.sleep(waitTime);
             }
 
-            const {data, ignore} = this.createMessageData(message, phoneNumber);
+            const {data, ignore} = this.createMessageData(message, phoneNumber, message_1_text);
             if (!ignore) {
                 try {
                     // Attempt to send the message
@@ -137,7 +138,7 @@ class WhatsAppRateLimiter {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    createMessageData(message, from) {
+    createMessageData(message, from, previousText) {
         let data;
         let ignore = false;
 
@@ -170,7 +171,7 @@ class WhatsAppRateLimiter {
                 interactive: {
                     type: 'button',
                     body: {
-                        text: message.previousValue || 'Make your choice',
+                        text: previousText || 'Make your choice',
                     },
                     action: {
                         buttons: message.buttons,
