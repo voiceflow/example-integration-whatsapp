@@ -258,5 +258,5 @@ Use the **WhatsApp** app on your phone to send a message to the number you got f
 
 # Documentation
 Cloud API: https://developers.facebook.com/docs/whatsapp/cloud-api<br>
-Voiceflow Dialog Manager API: https://developer.voiceflow.com/reference<br>
-Project Versioning in Voiceflow: https://www.voiceflow.com/docs/documentation-project-versioning<br>
+Voiceflow Dialog Manager API: https://docs.voiceflow.com/docs/deploy-whatsapp<br>
+Project Versioning in Voiceflow: https://docs.voiceflow.com/reference/project-ids-and-versions<br>
