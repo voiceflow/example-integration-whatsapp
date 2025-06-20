@@ -260,3 +260,5 @@ Use the **WhatsApp** app on your phone to send a message to the number you got f
 Cloud API: https://developers.facebook.com/docs/whatsapp/cloud-api<br>
 Voiceflow Dialog Manager API: https://docs.voiceflow.com/docs/deploy-whatsapp<br>
 Project Versioning in Voiceflow: https://docs.voiceflow.com/reference/project-ids-and-versions<br>
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=voiceflow-community_example-integration-whatsapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=voiceflow-community_example-integration-whatsapp)
